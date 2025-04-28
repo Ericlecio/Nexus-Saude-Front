@@ -1,0 +1,31 @@
+{
+  "name": "nexus-saude",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
+    "aos": "^2.3.4",
+    "axios": "^1.9.0",
+    "body-parser": "^1.20.3",
+    "bootstrap": "^5.3.3",
+    "cors": "^2.8.5",
+    "emailjs-com": "^3.2.0",
+    "express": "^4.21.2",
+    "nodemailer": "^6.9.16",
+    "v-mask": "^2.3.0",
+    "vee-validate": "^4.14.7",
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5",
+    "vue-the-mask": "^0.11.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "vite": "^5.4.10"
+  }
+}
