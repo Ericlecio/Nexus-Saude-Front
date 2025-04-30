@@ -6,13 +6,6 @@
       <h1 class="text-center mb-4 text-primary"></h1>
 
       <div v-if="paciente">
-        <!-- Seção de Identidade do Paciente -->
-        <!-- <div class="card shadow-sm p-4 text-center">
-          <img :src="profilePicture" alt="Foto do Paciente" class="profile-img mb-3">
-          <h1 class="text-primary fw-bold">{{ paciente ? paciente.nomeCompleto : "Carregando..." }}</h1>
-          <p class="text-muted">Paciente cadastrado no Nexus Saúde</p>
-        </div> -->
-
         <!-- Informações Pessoais -->
         <div class="card shadow-sm mb-4">
           <div class="card-body">
@@ -416,13 +409,6 @@ export default {
 .container {
   max-width: 90%;
 }
-
-/* .profile-img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 3px solid #007bff;
-} */
 
 .cursor-pointer {
   cursor: pointer;

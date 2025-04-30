@@ -55,8 +55,6 @@
 </template>
 
 <script>
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { getAuth, signOut } from "firebase/auth";
 
 export default {
   data() {

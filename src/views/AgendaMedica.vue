@@ -37,14 +37,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="consulta in consultasFiltradas" :key="consulta.id"
-                                :class="{ 'consulta-cancelada': consulta.situacao.toLowerCase().includes('cancelada') }">
-                                <td>{{ consulta.especialidade || 'Não informado' }}</td>
-                                <td>{{ consulta.pacienteNome || 'Não disponível' }}</td>
-                                <td>{{ consulta.pacienteTelefone || 'Não informado' }}</td>
-                                <td>{{ consulta.local || 'Não informado' }}</td>
-                                <td>{{ consulta.data || 'Não informado' }}</td>
-                                <td>{{ consulta.situacao || 'Não informado' }}</td>
+                            <tr v-for="consulta in consultasFiltradas" :key="consulta.id" :class="{
+                                'consulta-cancelada': consulta.situacao
+                                    .toLowerCase()
+                                    .includes('cancelada'),
+                            }">
+                                <td>{{ consulta.especialidade || "Não informado" }}</td>
+                                <td>{{ consulta.pacienteNome || "Não disponível" }}</td>
+                                <td>{{ consulta.pacienteTelefone || "Não informado" }}</td>
+                                <td>{{ consulta.local || "Não informado" }}</td>
+                                <td>{{ consulta.data || "Não informado" }}</td>
+                                <td>{{ consulta.situacao || "Não informado" }}</td>
                                 <td class="text-center">
                                     <button v-if="consulta.situacao === 'Confirmada'" class="btn btn-sm btn-warning"
                                         @click="confirmarAcao(consulta.id, 'cancelar')">
@@ -64,18 +67,26 @@
                     </table>
                 </div>
 
-                <p v-if="!consultasFiltradas.length" class="text-center text-muted">Nenhuma consulta encontrada.</p>
+                <p v-if="!consultasFiltradas.length" class="text-center text-muted">
+                    Nenhuma consulta encontrada.
+                </p>
             </div>
         </div>
 
         <!-- Modal de confirmação de cancelamento -->
         <div v-if="showModal" class="modal-overlay">
             <div class="modal-content">
-                <h4 class="text-center text-danger fw-bold">{{ modalMensagem.titulo }}</h4>
+                <h4 class="text-center text-danger fw-bold">
+                    {{ modalMensagem.titulo }}
+                </h4>
                 <p class="text-center">{{ modalMensagem.texto }}</p>
                 <div class="text-center mt-3">
-                    <button class="btn btn-danger me-3" @click="confirmarAcaoModal">Confirmar</button>
-                    <button class="btn btn-secondary" @click="showModal = false">Fechar</button>
+                    <button class="btn btn-danger me-3" @click="confirmarAcaoModal">
+                        Confirmar
+                    </button>
+                    <button class="btn btn-secondary" @click="showModal = false">
+                        Fechar
+                    </button>
                 </div>
             </div>
         </div>
@@ -85,8 +96,6 @@
 </template>
 
 <script>
-import { collection, getDocs, query, where, doc, updateDoc, getDoc, addDoc, deleteDoc } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore";
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
 import BotaoVoltar from "@/components/BotaoVoltar.vue";
@@ -133,43 +142,37 @@ export default {
         },
     },
     methods: {
-        async carregarConsultas() {
-            try {
-                const user = JSON.parse(sessionStorage.getItem("user"));
-                if (!user || user.tipo !== "medico" || !user.id) {
-                    alert("Apenas médicos podem acessar esta página. Faça login.");
-                    this.$router.push("/login");
-                    return;
-                }
-
-                const db = getFirestore();
-
-                const qAgendamentos = query(collection(db, "agendamentos"), where("medicoId", "==", user.id));
-                const snapshotAgendamentos = await getDocs(qAgendamentos);
-                let consultasAtuais = snapshotAgendamentos.empty ? [] : snapshotAgendamentos.docs.map((docSnap) => ({
-                    id: docSnap.id,
-                    ...docSnap.data(),
-                }));
-
-                const qHistorico = query(collection(db, "historicoConsultas"), where("medicoId", "==", user.id));
-                const snapshotHistorico = await getDocs(qHistorico);
-                let historicoConsultas = snapshotHistorico.empty ? [] : snapshotHistorico.docs.map((docSnap) => ({
-                    id: docSnap.id,
-                    ...docSnap.data(),
-                }));
-
-                this.consultas = [...consultasAtuais, ...historicoConsultas];
-            } catch (error) {
-                console.error("Erro ao carregar consultas:", error);
-                alert("Erro ao carregar consultas.");
-            } finally {
-                this.carregando = false;
-            }
+        carregarConsultas() {
+            // Simulação de carregamento de dados sem Firebase.
+            // Substitua por sua lógica de obtenção de dados, por exemplo, de uma API.
+            this.consultas = [
+                // Exemplo de dados de consultas
+                {
+                    id: 1,
+                    especialidade: "Dermatologia",
+                    pacienteNome: "João Silva",
+                    pacienteTelefone: "(11) 1234-5678",
+                    local: "Clínica A",
+                    data: "2025-05-10 10:00",
+                    situacao: "Confirmada",
+                },
+                {
+                    id: 2,
+                    especialidade: "Cardiologia",
+                    pacienteNome: "Ana Oliveira",
+                    pacienteTelefone: "(11) 2345-6789",
+                    local: "Clínica B",
+                    data: "2025-05-12 14:00",
+                    situacao: "Cancelada pelo paciente",
+                },
+            ];
+            this.carregando = false;
         },
 
         confirmarAcao(id, acao) {
             this.consultaSelecionada = id;
-            this.acaoSelecionada = acao === "cancelar" ? "Cancelada pelo médico" : acao;
+            this.acaoSelecionada =
+                acao === "cancelar" ? "Cancelada pelo médico" : acao;
 
             let titulo = "";
             let texto = "";
@@ -189,39 +192,29 @@ export default {
             this.showModal = true;
         },
 
-        async confirmarAcaoModal() {
+        confirmarAcaoModal() {
             if (this.acaoSelecionada) {
-                await this.atualizarSituacaoConsulta(this.consultaSelecionada, this.acaoSelecionada);
+                this.atualizarSituacaoConsulta(
+                    this.consultaSelecionada,
+                    this.acaoSelecionada
+                );
             }
             this.showModal = false;
         },
 
-        async atualizarSituacaoConsulta(id, situacao) {
-            const db = getFirestore();
-            const consultaRef = doc(db, "agendamentos", id);
+        atualizarSituacaoConsulta(id, situacao) {
+            // Simulação de atualização da situação da consulta.
+            const consultaIndex = this.consultas.findIndex(
+                (consulta) => consulta.id === id
+            );
 
-            try {
-                const consultaSnap = await getDoc(consultaRef);
-                if (consultaSnap.exists()) {
-                    const consulta = consultaSnap.data();
-                    consulta.situacao = situacao;
-
-                    await addDoc(collection(db, "historicoConsultas"), {
-                        ...consulta,
-                        situacao: situacao,
-                        dataAtualizacao: new Date().toISOString()
-                    });
-
-                    await deleteDoc(consultaRef);
-
-                    alert(`Consulta marcada como ${situacao}`);
-                    this.carregarConsultas();
-                } else {
-                    alert("Consulta não encontrada.");
-                }
-            } catch (error) {
-                console.error("Erro ao atualizar a situação da consulta:", error);
-                alert("Erro ao atualizar a situação. Tente novamente.");
+            if (consultaIndex !== -1) {
+                const consulta = this.consultas[consultaIndex];
+                consulta.situacao = situacao;
+                alert(`Consulta marcada como ${situacao}`);
+                this.carregarConsultas();
+            } else {
+                alert("Consulta não encontrada.");
             }
         },
     },

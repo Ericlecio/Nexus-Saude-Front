@@ -1,9 +1,0 @@
-{
-  "projects": {
-    "default": "nexus-saude-e8cb6",
-    "staging": "nexus-saude-app",
-    "\t": "nexus-saude-app"
-  },
-  "targets": {},
-  "etags": {}
-}

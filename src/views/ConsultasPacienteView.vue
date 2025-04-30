@@ -13,7 +13,6 @@
       </div>
 
       <div v-else>
-
         <!-- Menu de Filtros -->
         <ul class="nav nav-pills justify-content-center mb-4">
           <li class="nav-item" v-for="opcao in opcoesFiltro" :key="opcao.valor">
@@ -40,7 +39,9 @@
             </thead>
             <tbody>
               <tr v-for="agendamento in agendamentosFiltrados" :key="agendamento.id" :class="{
-                'consulta-cancelada': agendamento.situacao.toLowerCase().includes('cancelada'),
+                'consulta-cancelada': agendamento.situacao
+                  .toLowerCase()
+                  .includes('cancelada'),
               }">
                 <td>{{ agendamento.especialidade }}</td>
                 <td>{{ agendamento.medicoNome }}</td>
@@ -57,7 +58,6 @@
                 </td>
               </tr>
             </tbody>
-
           </table>
         </div>
 
@@ -70,13 +70,17 @@
     <!-- Modal de confirmação -->
     <div v-if="showModal" class="modal-overlay">
       <div class="modal-content">
-        <h4 class="text-center text-danger fw-bold">{{ modalMensagem.titulo }}</h4>
+        <h4 class="text-center text-danger fw-bold">
+          {{ modalMensagem.titulo }}
+        </h4>
         <p class="text-center">{{ modalMensagem.texto }}</p>
         <div class="text-center mt-3">
           <button class="btn btn-danger me-3" @click="confirmarAcaoModal">
             Confirmar
           </button>
-          <button class="btn btn-secondary" @click="showModal = false">Fechar</button>
+          <button class="btn btn-secondary" @click="showModal = false">
+            Fechar
+          </button>
         </div>
       </div>
     </div>
@@ -86,8 +90,6 @@
 </template>
 
 <script>
-import { collection, getDocs, query, where, doc, updateDoc, getDoc, addDoc, deleteDoc } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore";
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
 import BotaoVoltar from "@/components/BotaoVoltar.vue";
@@ -135,37 +137,33 @@ export default {
     },
   },
   methods: {
-    async carregarAgendamentos() {
-      try {
-        const user = JSON.parse(sessionStorage.getItem("user"));
-        if (!user || user.tipo !== "paciente" || !user.id) {
-          alert("Apenas pacientes podem acessar esta página. Faça login.");
-          this.$router.push("/login");
-          return;
-        }
-
-        const db = getFirestore();
-
-        const qAgendamentos = query(collection(db, "agendamentos"), where("pacienteId", "==", user.id));
-        const snapshotAgendamentos = await getDocs(qAgendamentos);
-        let agendamentosAtuais = snapshotAgendamentos.empty ? [] : snapshotAgendamentos.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
-
-        const qHistorico = query(collection(db, "historicoConsultas"), where("pacienteId", "==", user.id));
-        const snapshotHistorico = await getDocs(qHistorico);
-        let historicoConsultas = snapshotHistorico.empty ? [] : snapshotHistorico.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
-
-        this.agendamentos = [...agendamentosAtuais, ...historicoConsultas];
-      } catch (error) {
-        alert("Erro ao carregar agendamentos.");
-      } finally {
-        this.carregando = false;
-      }
+    carregarAgendamentos() {
+      // Simulação de carregamento de dados sem Firebase.
+      // Substitua por sua lógica de obtenção de dados, por exemplo, de uma API.
+      this.agendamentos = [
+        // Exemplo de dados de agendamentos
+        {
+          id: 1,
+          especialidade: "Dermatologia",
+          medicoNome: "Dr. João Silva",
+          local: "Clínica X",
+          data: "2025-05-10 10:00",
+          telefoneConsultorio: "(11) 1234-5678",
+          valorConsulta: "R$ 150,00",
+          situacao: "Confirmada",
+        },
+        {
+          id: 2,
+          especialidade: "Cardiologia",
+          medicoNome: "Dr. Ana Oliveira",
+          local: "Clínica Y",
+          data: "2025-05-12 14:00",
+          telefoneConsultorio: "(11) 2345-6789",
+          valorConsulta: "R$ 200,00",
+          situacao: "Cancelada pelo paciente",
+        },
+      ];
+      this.carregando = false;
     },
 
     confirmarCancelamento(id) {
@@ -178,31 +176,22 @@ export default {
       this.showModal = true;
     },
 
-    async cancelarConsulta() {
-      const db = getFirestore();
-      const consultaRef = doc(db, "agendamentos", this.agendamentoSelecionado);
+    cancelarConsulta() {
+      // Simulação de cancelamento de consulta
+      const agendamentoIndex = this.agendamentos.findIndex(
+        (agendamento) => agendamento.id === this.agendamentoSelecionado
+      );
 
-      try {
-        const consultaSnap = await getDoc(consultaRef);
-        if (consultaSnap.exists()) {
-          const consulta = consultaSnap.data();
-
-          await addDoc(collection(db, "historicoConsultas"), {
-            ...consulta,
-            situacao: "Cancelada pelo paciente",
-            dataCancelamento: new Date().toISOString()
-          });
-          await deleteDoc(consultaRef);
-          alert("Consulta cancelada com sucesso e movida para o histórico.");
-        } else {
-          alert("Consulta não encontrada.");
-        }
-      } catch (error) {
-        alert("Erro ao cancelar consulta. Tente novamente.");
-      } finally {
-        this.showModal = false;
+      if (agendamentoIndex !== -1) {
+        const agendamento = this.agendamentos[agendamentoIndex];
+        agendamento.situacao = "Cancelada pelo paciente";
+        alert("Consulta cancelada com sucesso.");
         this.carregarAgendamentos();
+      } else {
+        alert("Consulta não encontrada.");
       }
+
+      this.showModal = false;
     },
 
     confirmarAcaoModal() {
@@ -216,7 +205,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .div-principal {

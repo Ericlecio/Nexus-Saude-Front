@@ -233,8 +233,6 @@
 <script>
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -259,47 +257,27 @@ export default {
       AOS.init();
     }, 1000);
 
+    // Simulação de verificação de usuário
     this.verificarUsuario();
+
     setInterval(() => {
       this.imagemAtual = (this.imagemAtual + 1) % this.imagensBanner.length;
     }, 5000);
   },
   methods: {
-    async verificarUsuario() {
-      const auth = getAuth();
-      const db = getFirestore();
-
-      onAuthStateChanged(auth, async (firebaseUser) => {
-        if (firebaseUser) {
-          try {
-            const pacienteRef = doc(db, "pacientes", firebaseUser.uid);
-            const medicoRef = doc(db, "medicos", firebaseUser.uid);
-
-            const [pacienteSnap, medicoSnap] = await Promise.all([
-              getDoc(pacienteRef),
-              getDoc(medicoRef),
-            ]);
-
-            if (pacienteSnap.exists()) {
-              this.user = { id: firebaseUser.uid, ...pacienteSnap.data(), tipo: "paciente" };
-              this.isPaciente = true;
-              this.isMedico = false;
-            } else if (medicoSnap.exists()) {
-              this.user = { id: firebaseUser.uid, ...medicoSnap.data(), tipo: "medico" };
-              this.isMedico = true;
-              this.isPaciente = false;
-            } else {
-              this.user = null;
-            }
-          } catch (error) {
-            console.error("Erro ao verificar usuário:", error);
-            this.user = null;
-          }
-        } else {
-          this.user = null;
-        }
-      });
-    },
+    verificarUsuario() {
+      // Simulação de verificação do tipo de usuário
+      const userType = "paciente"; // ou "medico"
+      if (userType === "paciente") {
+        this.user = { tipo: "paciente", nome: "João Silva" };
+        this.isPaciente = true;
+        this.isMedico = false;
+      } else if (userType === "medico") {
+        this.user = { tipo: "medico", nome: "Dr. Ana Oliveira" };
+        this.isMedico = true;
+        this.isPaciente = false;
+      }
+    }
   },
   components: {
     Navbar,

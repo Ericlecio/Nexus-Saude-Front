@@ -174,6 +174,7 @@
 <script>
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
+import api from "@/services/http"; // Verifique se o caminho está correto
 import {
   validarNome,
   validarCPF,
@@ -281,6 +282,16 @@ export default {
     };
   },
   methods: {
+    formatarValorConsulta(valor) {
+      let valorFormatado = valor.replace(/\D/g, "");
+      if (valor === "" || parseFloat(valor) === 0) {
+        return "R$ 0,00";
+      }
+      return (parseFloat(valor) / 100).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      });
+    },
     validarNome(event) {
       this.form.nomeCompleto = validarNome(event.target.value);
     },
@@ -322,7 +333,43 @@ export default {
       this.valorInvalido = this.form.valorConsulta === "R$ 0,00";
     },
     async submitForm() {
-    },
+      try {
+        // Remover o símbolo 'R$' e garantir que o valor seja um número válido
+        const valorConsulta = parseFloat(this.form.valorConsulta.replace(/[^\d.-]/g, ''));
+
+        // Verificar se o valor da consulta é válido
+        if (isNaN(valorConsulta) || valorConsulta <= 0) {
+          alert("O valor da consulta não é válido.");
+          return;
+        }
+
+        const response = await api.post('/medico/inserir', {
+          nome: this.form.nomeCompleto,
+          cpf: this.form.cpf,
+          sexo: this.form.sexo,
+          dataNascimento: this.form.dataNascimento,
+          email: this.form.email,
+          senha: this.form.senha,
+          telefoneConsultorio: this.form.telefoneConsultorio,
+          crm: this.form.crm,
+          uf: this.form.uf,
+          especialidade: this.form.especialidade,
+          valorConsulta: valorConsulta,  // Enviando apenas o valor numérico
+          tempoConsulta: this.form.tempoConsulta,
+        });
+
+        alert('Médico cadastrado com sucesso!');
+        console.log(response.data);
+      } catch (error) {
+        console.error('Erro no cadastro:', error.response || error);
+        if (error.response && error.response.data) {
+          alert(`Erro ao cadastrar médico: ${error.response.data.message || 'Tente novamente.'}`);
+        } else {
+          alert('Erro ao cadastrar médico. Tente novamente.');
+        }
+      }
+    }
+
   },
 };
 </script>
