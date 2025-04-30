@@ -153,22 +153,7 @@
 <script>
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  collection,
-  where,
-  getDocs,
-  writeBatch
-} from "firebase/firestore";
-import { getAuth, onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
 import BotaoVoltar from "@/components/BotaoVoltar.vue";
-
-
 
 export default {
   name: "PerfilPaciente",
@@ -176,19 +161,16 @@ export default {
     Navbar,
     Footer,
     BotaoVoltar,
-
   },
   data() {
     return {
       paciente: null,
-      pacienteId: null,
       showModalEdit: false,
       showModalDelete: false,
       formEdit: {},
       hoje: new Date().toISOString().split("T")[0],
       cpfInvalido: false,
-      // profilePicture: "https://via.placeholder.com/100", // Aqui pode ser a URL real da foto do paciente
-
+      pacienteId: "12345", // Simulação de ID do paciente
     };
   },
   methods: {
@@ -206,35 +188,23 @@ export default {
         "Pendente": "fas fa-clock"
       }[status] || "fas fa-info-circle";
     },
-    async carregarPerfil() {
-      try {
-        const auth = getAuth();
-        const db = getFirestore();
-        const firebaseUser = auth.currentUser;
-
-        if (firebaseUser) {
-          const pacienteRef = doc(db, "pacientes", firebaseUser.uid);
-          const pacienteSnap = await getDoc(pacienteRef);
-
-          if (pacienteSnap.exists()) {
-            this.pacienteId = firebaseUser.uid;
-            this.paciente = pacienteSnap.data();
-
-            // Após carregar os dados do paciente, carregar o histórico de consultas
-            await this.carregarHistoricoConsultas();
-          } else {
-            await signOut(auth);
-            alert("Email verificado, Faça login Novamente.");
-            this.$router.push("/login");
-          }
-        } else {
-          this.$router.push("/login");
-        }
-      } catch (error) {
-        alert("Erro ao carregar perfil do paciente.");
-      }
+    // Carregar os dados do paciente (simulação)
+    carregarPerfil() {
+      this.paciente = {
+        nomeCompleto: "Maria Silva",
+        email: "maria.silva@email.com",
+        telefone: "(11) 98765-4321",
+        planoSaude: "Unimed",
+        cpf: "123.456.789-10",
+        dataNascimento: "1985-06-15",
+        consultas: [
+          { id: 1, data: "2025-05-05", medicoNome: "Dr. João", especialidade: "Cardiologia", local: "Clínica A", situacao: "Confirmada" },
+          { id: 2, data: "2025-05-10", medicoNome: "Dr. Ana", especialidade: "Dermatologia", local: "Clínica B", situacao: "Pendente" }
+        ]
+      };
     },
 
+    // Métodos para editar o perfil
     abrirModal() {
       if (!this.paciente) return;
       this.formEdit = { ...this.paciente };
@@ -246,10 +216,22 @@ export default {
       this.showModalDelete = false;
     },
 
-    validarNome(event) {
-      this.formEdit.nomeCompleto = event.target.value.replace(/[^a-zA-Z\s]/g, "");
+    salvarEdicao() {
+      this.paciente = { ...this.formEdit };
+      alert("Informações atualizadas com sucesso!");
+      this.fecharModal();
     },
 
+    confirmarExclusao() {
+      this.showModalDelete = true;
+    },
+
+    deletarConta() {
+      alert("Conta excluída com sucesso!");
+      this.$router.push("/login"); // Simulando a navegação após exclusão
+    },
+
+    // Formatação de campos
     formatarTelefone(event) {
       let telefone = event.target.value.replace(/\D/g, "");
       telefone = telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
@@ -282,128 +264,13 @@ export default {
         digito1 === parseInt(cpf[9]) && digito2 === parseInt(cpf[10])
       );
     },
-
-    confirmarExclusao() {
-      this.showModalDelete = true;
-    },
-
-    async deletarConta() {
-      try {
-        const auth = getAuth();
-        const user = auth.currentUser;
-        const db = getFirestore();
-
-        if (!user) {
-          alert("Usuário não autenticado.");
-          return;
-        }
-
-        const batch = writeBatch(db);
-
-        const agendamentosQuery = query(
-          collection(db, "agendamentos"),
-          where("pacienteId", "==", this.pacienteId)
-        );
-        const agendamentosSnapshot = await getDocs(agendamentosQuery);
-
-        if (!agendamentosSnapshot.empty) {
-          for (const agendamentoDoc of agendamentosSnapshot.docs) {
-            const agendamento = agendamentoDoc.data();
-
-            const historicoRef = doc(collection(db, "historicoConsultas"));
-            batch.set(historicoRef, {
-              pacienteId: agendamento.pacienteId,
-              pacienteNome: agendamento.pacienteNome,
-              pacienteTelefone: agendamento.pacienteTelefone,
-              medicoId: agendamento.medicoId,
-              medicoNome: agendamento.medicoNome,
-              data: agendamento.data,
-              local: agendamento.local,
-              especialidade: agendamento.especialidade,
-              valorConsulta: agendamento.valorConsulta,
-              situacao: "Paciente removido do sistema",
-            });
-
-            batch.delete(agendamentoDoc.ref);
-          }
-        }
-
-        const pacienteRef = doc(db, "pacientes", this.pacienteId);
-        batch.delete(pacienteRef);
-
-        await batch.commit();
-
-        await user.delete();
-
-        alert("Conta excluída com sucesso!");
-        this.$router.push("/login");
-
-      } catch (error) {
-        console.error("Erro ao excluir conta:", error);
-        if (error.code === "auth/requires-recent-login") {
-          alert("Por segurança, você precisa fazer login novamente para excluir sua conta.");
-          await signOut(auth);
-          this.$router.push("/login");
-        } else {
-          alert(`Erro ao excluir conta: ${error.message}`);
-        }
-      } finally {
-        this.fecharModal();
-      }
-    },
-
-    async carregarHistoricoConsultas() {
-      if (!this.pacienteId) return;
-
-      try {
-        const db = getFirestore();
-
-        const qHistorico = query(collection(db, "historicoConsultas"), where("pacienteId", "==", this.pacienteId));
-        const snapshotHistorico = await getDocs(qHistorico);
-
-        const consultas = snapshotHistorico.empty ? [] : snapshotHistorico.docs.map((docSnap) => {
-          const data = docSnap.data();
-          return {
-            id: docSnap.id,
-            data: data.data || "Sem data",
-            medicoNome: data.medicoNome || "Não informado",
-            especialidade: data.especialidade || "Não informado",
-            local: data.local || "Não informado",
-            situacao: data.situacao || "Sem status",
-          };
-        });
-        this.paciente.consultas = consultas;
-
-      } catch (error) {
-        alert("Erro ao carregar o histórico de consultas.");
-      }
-    },
-
-    async salvarEdicao() {
-      try {
-        if (!this.pacienteId) {
-          console.error("ID do paciente não encontrado.");
-          alert("Erro ao atualizar dados. ID do paciente não encontrado.");
-          return;
-        }
-        const db = getFirestore();
-        const pacienteRef = doc(db, "pacientes", this.pacienteId);
-        const dadosAtualizados = { ...this.formEdit };
-        delete dadosAtualizados.email;
-        await updateDoc(pacienteRef, dadosAtualizados);
-        this.paciente = { ...this.paciente, ...dadosAtualizados };
-        alert("Informações atualizadas com sucesso!");
-        this.fecharModal();
-      } catch (error) {
-        alert("Erro ao atualizar paciente. Tente novamente.");
-      }
-    },
   },
   mounted() {
     this.carregarPerfil();
   },
 };
 </script>
+
 
 <style scoped>
 .container {
