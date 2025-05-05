@@ -3,22 +3,14 @@
   <div class="container-fluid py-5 mt-5">
     <div class="row justify-content-center align-items-center">
       <div class="col-lg-10 col-md-12">
-        <div
-          class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative"
-        >
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
           <div class="voltar-container">
             <BotaoVoltar />
           </div>
 
           <div class="row g-0">
-            <div
-              class="col-md-4 d-flex align-items-center justify-content-center bg-light"
-            >
-              <img
-                src="@/assets/img/NexusSaude_vertical.png"
-                alt="Imagem Nexus Saúde"
-                class="img-fluid logo"
-              />
+            <div class="col-md-4 d-flex align-items-center justify-content-center bg-light">
+              <img src="@/assets/img/NexusSaude_vertical.png" alt="Imagem Nexus Saúde" class="img-fluid logo" />
             </div>
 
             <div class="col-md-8 p-5 bg-white">
@@ -31,49 +23,24 @@
               <form @submit.prevent="submitForm">
                 <div class="row g-4">
                   <div class="col-md-4 col-sm-12">
-                    <label
-                      for="especialidade"
-                      class="form-label text-dark fw-bold"
-                    >
+                    <label for="especialidade" class="form-label text-dark fw-bold">
                       <i class="fas fa-user-md"></i> Especialidade
                     </label>
-                    <select
-                      v-model="form.especialidade"
-                      id="especialidade"
-                      class="form-select"
-                      @change="filterMedicosByEspecialidade"
-                      required
-                    >
+                    <select v-model="form.especialidade" id="especialidade" class="form-select"
+                      @change="filterMedicosByEspecialidade" required>
                       <option value="" disabled selected>Selecione</option>
-                      <option
-                        v-for="especialidade in especialidades"
-                        :key="especialidade"
-                        :value="especialidade"
-                      >
+                      <option v-for="especialidade in especialidades" :key="especialidade" :value="especialidade">
                         {{ especialidade }}
                       </option>
                     </select>
                   </div>
                   <div class="col-md-4 col-sm-12">
-                    <label
-                      for="medicoNome"
-                      class="form-label text-dark fw-bold"
-                    >
+                    <label for="medicoNome" class="form-label text-dark fw-bold">
                       <i class="fas fa-stethoscope"></i> Médico
                     </label>
-                    <select
-                      v-model="form.medicoId"
-                      id="medico"
-                      class="form-select"
-                      required
-                      @change="medicoChanged"
-                    >
+                    <select v-model="form.medicoId" id="medico" class="form-select" required @change="medicoChanged">
                       <option value="" disabled selected>Selecione</option>
-                      <option
-                        v-for="medico in medicosFiltrados"
-                        :key="medico.id"
-                        :value="medico.id"
-                      >
+                      <option v-for="medico in medicosFiltrados" :key="medico.id" :value="medico.id">
                         {{ medico.nomeCompleto }}
                       </option>
                     </select>
@@ -82,18 +49,9 @@
                     <label for="data" class="form-label text-dark fw-bold">
                       <i class="fas fa-clock"></i> Horários Disponíveis
                     </label>
-                    <select
-                      v-model="form.data"
-                      id="data"
-                      class="form-select"
-                      required
-                    >
+                    <select v-model="form.data" id="data" class="form-select" required>
                       <option value="" disabled selected>Selecione</option>
-                      <option
-                        v-for="horario in horariosDisponiveis"
-                        :key="horario.horario"
-                        :value="horario.horario"
-                      >
+                      <option v-for="horario in horariosDisponiveis" :key="horario.horario" :value="horario.horario">
                         {{ horario.horario }}
                       </option>
                     </select>
@@ -102,87 +60,44 @@
 
                 <div class="row g-4 mt-3">
                   <div class="col-md-4 col-sm-12">
-                    <label
-                      for="pacienteNome"
-                      class="form-label text-dark fw-bold"
-                    >
+                    <label for="pacienteNome" class="form-label text-dark fw-bold">
                       <i class="fas fa-user"></i> Paciente
                     </label>
-                    <input
-                      type="text"
-                      id="pacienteNome"
-                      v-model="form.pacienteNome"
-                      class="form-control"
-                      readonly
-                    />
+                    <input type="text" id="pacienteNome" v-model="form.pacienteNome" class="form-control" readonly />
                   </div>
                   <div class="col-md-4 col-sm-12">
-                    <label
-                      for="telefoneConsultorio"
-                      class="form-label text-dark fw-bold"
-                    >
+                    <label for="telefoneConsultorio" class="form-label text-dark fw-bold">
                       <i class="fas fa-phone-alt"></i> Telefone do Consultório
                     </label>
-                    <input
-                      type="text"
-                      id="telefoneConsultorio"
-                      v-model="form.telefoneConsultorio"
-                      class="form-control"
-                      readonly
-                    />
+                    <input type="text" id="telefoneConsultorio" v-model="form.telefoneConsultorio" class="form-control"
+                      readonly />
                   </div>
                   <div class="col-md-4 col-sm-12">
-                    <label
-                      for="valorConsulta"
-                      class="form-label text-dark fw-bold"
-                    >
+                    <label for="valorConsulta" class="form-label text-dark fw-bold">
                       <i class="fas fa-money-bill-wave"></i> Valor da Consulta
                     </label>
-                    <input
-                      type="text"
-                      id="valorConsulta"
-                      v-model="form.valorConsulta"
-                      class="form-control"
-                      readonly
-                    />
+                    <input type="text" id="valorConsulta" v-model="form.valorConsulta" class="form-control" readonly />
                   </div>
                 </div>
 
                 <div class="row g-4 mt-3">
                   <div class="col-md-4 col-sm-12">
-                    <label
-                      for="pacienteTelefone"
-                      class="form-label text-dark fw-bold"
-                    >
+                    <label for="pacienteTelefone" class="form-label text-dark fw-bold">
                       <i class="fas fa-mobile-alt"></i> Telefone
                     </label>
-                    <input
-                      type="text"
-                      id="pacienteTelefone"
-                      v-model="form.pacienteTelefone"
-                      class="form-control"
-                      readonly
-                    />
+                    <input type="text" id="pacienteTelefone" v-model="form.pacienteTelefone" class="form-control"
+                      readonly />
                   </div>
                   <div class="col-md-4 col-sm-12">
                     <label for="local" class="form-label text-dark fw-bold">
                       <i class="fas fa-map-marker-alt"></i> Local
                     </label>
-                    <input
-                      type="text"
-                      id="local"
-                      v-model="form.local"
-                      class="form-control"
-                      readonly
-                    />
+                    <input type="text" id="local" v-model="form.local" class="form-control" readonly />
                   </div>
                 </div>
 
                 <div class="text-center mt-4">
-                  <button
-                    type="submit"
-                    class="btn btn-primary btn-lg btn-shadow"
-                  >
+                  <button type="submit" class="btn btn-primary btn-lg btn-shadow">
                     <i class="fas fa-calendar-check"></i> Agendar Consulta
                   </button>
                 </div>

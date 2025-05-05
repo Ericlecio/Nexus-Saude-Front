@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import LoginView from "../views/LoginPaciente.vue";
 import CadastroMedicoView from "@/views/CadastroMedicoView.vue";
 import ContatoView from "@/views/ContatoView.vue";
 import SobreView from "@/views/SobreView.vue";
@@ -11,15 +10,22 @@ import PerfilPaciente from "@/views/PerfilPaciente.vue";
 import AgendaMedica from "@/views/AgendaMedica.vue";
 import LoginPaciente from "../views/LoginPaciente.vue";
 import LoginMedico from "../views/LoginMedico.vue";
-import Dashboard from "../views/Dashboard.vue";
+import DashboardAdmin from "../views/Admin/DashboardAdmin.vue";
+import LoginAdmin from "@/views/LoginAdmin.vue";
+import CadastroPaciente from "@/views/CadastroPaciente.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/admin",
-      name: "dashboard",
-      component: Dashboard,
+      path: "/loginAdmin",
+      name: "loginAdmin",
+      component: LoginAdmin,
+    },
+    {
+      path: "/dashboardAdmin",
+      name: "DashboardAdmin",
+      component: DashboardAdmin,
     },
     {
       path: "/",
@@ -35,6 +41,11 @@ const router = createRouter({
       path: "/loginMedico",
       name: "loginMedico",
       component: LoginMedico,
+    },
+    {
+      path: "/cadastroPaciente",
+      name: "cadastroPaciente",
+      component: CadastroPaciente,
     },
     {
       path: "/cadastro",

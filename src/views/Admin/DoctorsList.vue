@@ -23,30 +23,6 @@
     </div>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            doctors: [
-                { id: 1, name: 'Dr. João Silva', specialty: 'Cardiologia' },
-                { id: 2, name: 'Dra. Maria Souza', specialty: 'Dermatologia' },
-                // Dados simulados, que viriam de uma API
-            ]
-        };
-    },
-    methods: {
-        editDoctor(id) {
-            this.$router.push({ name: 'editDoctor', params: { id } });
-        },
-        deleteDoctor(id) {
-            if (confirm('Tem certeza que deseja excluir?')) {
-                this.doctors = this.doctors.filter(doctor => doctor.id !== id);
-            }
-        }
-    }
-};
-</script>
-
 <style scoped>
 table {
     width: 100%;
@@ -73,3 +49,27 @@ button:hover {
     background-color: #d32f2f;
 }
 </style>
+
+<script>
+export default {
+    data() {
+        return {
+            doctors: [
+                { id: 1, name: 'Dr. João Silva', specialty: 'Cardiologia' },
+                { id: 2, name: 'Dra. Maria Souza', specialty: 'Dermatologia' },
+                // Dados simulados, que viriam de uma API
+            ]
+        };
+    },
+    methods: {
+        editDoctor(id) {
+            this.$router.push({ name: 'editDoctor', params: { id } });
+        },
+        deleteDoctor(id) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                this.doctors = this.doctors.filter(doctor => doctor.id !== id);
+            }
+        }
+    }
+};
+</script>

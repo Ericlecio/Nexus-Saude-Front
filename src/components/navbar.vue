@@ -29,7 +29,7 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end animate-dropdown">
             <li v-if="!user">
-              <router-link class="dropdown-item" to="/login">Login</router-link>
+              <router-link class="dropdown-item" to="/loginPaciente">Login</router-link>
             </li>
 
             <li v-if="user && user.tipo === 'paciente'">

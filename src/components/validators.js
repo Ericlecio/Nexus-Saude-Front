@@ -4,41 +4,45 @@ export function validarNome(nome) {
 
 export function validarCPF(cpf) {
   cpf = cpf.replace(/[^\d]+/g, "");
-  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
-    return false;
-  }
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
   let soma = 0;
   let resto;
-  for (let i = 1; i <= 9; i++) {
-    soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
-  }
+  for (let i = 1; i <= 9; i++) soma += parseInt(cpf[i - 1]) * (11 - i);
   resto = (soma * 10) % 11;
   if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf.substring(9, 10))) {
-    return false;
-  }
+  if (resto !== parseInt(cpf[9])) return false;
+
   soma = 0;
-  for (let i = 1; i <= 10; i++) {
-    soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
-  }
+  for (let i = 1; i <= 10; i++) soma += parseInt(cpf[i - 1]) * (12 - i);
   resto = (soma * 10) % 11;
   if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf.substring(10, 11))) {
-    return false;
-  }
-  return true;
+  return resto === parseInt(cpf[10]);
 }
 
 export function formatarCRM(crm) {
   return crm.replace(/\D/g, "").slice(0, 6);
 }
 
+export function handlePhoneInput(input) {
+  let phone = input.replace(/\D/g, "");
+  phone = phone.replace(/^(\d{2})(\d)/g, "($1) $2");
+  phone = phone.replace(/(\d{5})(\d)/, "$1-$2");
+  return phone.slice(0, 15);
+}
+
+export function handleCPFInput(input) {
+  return input
+    .replace(/\D/g, "")
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1-$2")
+    .slice(0, 14);
+}
+
 export function formatarValorConsulta(valor) {
   let valorFormatado = valor.replace(/\D/g, "");
-  if (valor === "" || parseFloat(valor) === 0) {
-    return "R$ 0,00";
-  }
-  return (parseFloat(valor) / 100).toLocaleString("pt-BR", {
+  if (valor === "" || parseFloat(valor) === 0) return "R$ 0,00";
+  return (parseFloat(valorFormatado) / 100).toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
