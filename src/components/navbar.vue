@@ -71,72 +71,9 @@ export default {
     toggleCollapse() {
       this.isCollapsed = !this.isCollapsed;
     },
-    async logout() {
-      try {
-        const auth = getAuth();
-        await signOut(auth);
-
-        sessionStorage.clear();
-        localStorage.clear();
-
-        this.user = null;
-
-        this.$router.push("/login");
-
-      } catch (error) {
-        console.error("Erro ao fazer logout:", error);
-        alert("Erro ao sair. Tente novamente.");
-      }
-    },
-    async verificarUsuario() {
-      const auth = getAuth();
-      const db = getFirestore();
-
-      auth.onAuthStateChanged(async (firebaseUser) => {
-        if (firebaseUser) {
-          try {
-            const pacienteRef = doc(db, "pacientes", firebaseUser.uid);
-            const medicoRef = doc(db, "medicos", firebaseUser.uid);
-            const [pacienteSnap, medicoSnap] = await Promise.all([
-              getDoc(pacienteRef),
-              getDoc(medicoRef),
-            ]);
-
-            if (pacienteSnap.exists()) {
-              this.user = {
-                id: firebaseUser.uid,
-                ...pacienteSnap.data(),
-                tipo: "paciente",
-              };
-              sessionStorage.setItem("user", JSON.stringify(this.user));
-            } else if (medicoSnap.exists()) {
-              this.user = {
-                id: firebaseUser.uid,
-                ...medicoSnap.data(),
-                tipo: "medico",
-              };
-              sessionStorage.setItem("user", JSON.stringify(this.user));
-            } else {
-              this.user = null;
-              sessionStorage.clear();
-              localStorage.clear();
-            }
-          } catch (error) {
-            console.error("Erro ao verificar usuário na Navbar:", error);
-            this.user = null;
-          }
-        } else {
-          this.user = null;
-        }
-      });
-    },
   },
   mounted() {
-    this.verificarUsuario();
-    window.addEventListener("scroll", this.handleScroll);
-  },
-  beforeUnmount() {
-    window.removeEventListener("scroll", this.handleScroll);
+
   },
 };
 </script>

@@ -70,7 +70,7 @@
 <script>
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
-import api from "@/services/http";
+import { pacienteApi } from '@/services/http';
 import {
     validarNome,
     validarCPF,
@@ -122,10 +122,12 @@ export default {
             }
 
             try {
-                const response = await api.post("/paciente/inserir", {
+                // Enviar a requisição para o backend
+                const response = await pacienteApi.post("/inserir", {
                     ...this.form,
-                    dataCadastro: new Date().toISOString()
+                    dataCadastro: new Date().toISOString()  // Garantindo que a data seja enviada corretamente
                 });
+
                 alert("Paciente cadastrado com sucesso!");
                 console.log(response.data);
             } catch (error) {

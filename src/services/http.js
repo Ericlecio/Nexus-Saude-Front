@@ -1,10 +1,18 @@
+// http.js
 import axios from "axios";
 
-const api = axios.create({
+const medicoApi = axios.create({
   baseURL: "http://localhost:8080/Medico",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-export default api;
+const pacienteApi = axios.create({
+  baseURL: "http://localhost:8080/Paciente",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export { medicoApi, pacienteApi };

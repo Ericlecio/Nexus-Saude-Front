@@ -296,7 +296,7 @@ export default {
   },
   methods: {
     goToCadastro() {
-      this.$router.push("/cadastro");
+      this.$router.push("/cadastroPaciente");
     },
     loginWithGoogle() {
       alert("Login com Google para Pacientes.");

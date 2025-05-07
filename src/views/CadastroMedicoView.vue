@@ -247,7 +247,7 @@ small.text-danger {
 <script>
 import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
-import api from '@/services/http';
+import { medicoApi } from '@/services/http'; // Importando apenas medicoApi
 import {
   validarNome,
   validarCPF,
@@ -358,10 +358,9 @@ export default {
           especialidade: this.form.especialidade,
           valorConsulta: valor,
           tempoConsulta: this.form.tempoConsulta,
-          perfil: "medico", // se necessário
         };
 
-        const response = await api.post('/medico/inserir', payload);
+        const response = await medicoApi.post('/inserir', payload);
 
         alert("Médico cadastrado com sucesso!");
         console.log(response.data);
