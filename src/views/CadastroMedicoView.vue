@@ -345,6 +345,13 @@ export default {
           return;
         }
 
+        const diasAtendimento = Object.keys(this.diasAtendimento).map(dia => ({
+          diaSemana: dia,
+          horario: `${this.diasAtendimento[dia].inicio} - ${this.diasAtendimento[dia].fim}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }));
+
         const payload = {
           nome: this.form.nomeCompleto,
           cpf: this.form.cpf,
@@ -358,17 +365,19 @@ export default {
           especialidade: this.form.especialidade,
           valorConsulta: valor,
           tempoConsulta: this.form.tempoConsulta,
+          diasAtendimento: diasAtendimento,  // Enviar os dias de atendimento
         };
 
         const response = await medicoApi.post('/inserir', payload);
 
-        alert("Médico cadastrado com sucesso!");
+        alert("Médico e seus dias de atendimento cadastrados com sucesso!");
         console.log(response.data);
       } catch (error) {
         console.error("Erro ao cadastrar médico:", error);
         alert("Erro ao cadastrar médico. Verifique os dados e tente novamente.");
       }
     }
+
   }
 };
 </script>

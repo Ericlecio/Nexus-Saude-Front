@@ -3,8 +3,16 @@
     <Navbar />
     <div class="container py-5">
       <BotaoVoltar />
-      <h1 class="text-center mb-4 text-primary"> </h1>
 
+      <!-- Campo para inserir ID do médico -->
+      <div class="mb-4">
+        <label for="medicoId" class="form-label">Digite o ID do Médico</label>
+        <input v-model="medicoId" type="number" id="medicoId" class="form-control" placeholder="ID do médico"
+          required />
+        <button @click="carregarPerfil" class="btn btn-primary mt-2">Carregar Perfil</button>
+      </div>
+
+      <!-- Se o médico for carregado -->
       <div v-if="medico">
         <!-- Seção de Identidade do Medico -->
         <div class="card shadow-sm mb-4" id="informacoespessois">
@@ -14,7 +22,7 @@
               <strong>Informações Pessoais</strong>
               <i class="fas fa-edit ms-2 text-primary cursor-pointer" @click="abrirModal('info')"></i>
             </h5>
-            <p><strong>Nome Completo:</strong> {{ medico.nomeCompleto }}</p>
+            <p><strong>Nome Completo:</strong> {{ medico.nome }}</p>
             <p><strong>E-mail:</strong> {{ medico.email }}</p>
             <p><strong>Telefone:</strong> {{ medico.telefoneConsultorio }}</p>
             <p><strong>CRM:</strong> {{ medico.crm || "Não informado" }}</p>
@@ -260,6 +268,8 @@
   <Footer />
 </template>
 
+
+
 <script>
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
@@ -275,7 +285,7 @@ export default {
       confirmarSenha: "",
       showModalExclusao: false,
       senhaExclusao: "",
-      medico: null,
+      medico: null, // Inicializando o objeto médico
       medicoId: null,
       showModalEdit: false,
       campoSelecionado: "",
@@ -286,130 +296,48 @@ export default {
       duracaoConsulta: 30,
       agenda: [],
       ufOptions: [
-        "AC",
-        "AL",
-        "AP",
-        "AM",
-        "BA",
-        "CE",
-        "DF",
-        "ES",
-        "GO",
-        "MA",
-        "MT",
-        "MS",
-        "MG",
-        "PA",
-        "PB",
-        "PR",
-        "PE",
-        "PI",
-        "RJ",
-        "RN",
-        "RS",
-        "RO",
-        "RR",
-        "SC",
-        "SP",
-        "SE",
-        "TO",
+        "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
+        "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
+        "SP", "SE", "TO",
       ],
       especialidades: [
-        "Pediatria",
-        "Cardiologia",
-        "Dermatologia",
-        "Ortopedia",
-        "Neurologia",
-        "Ginecologia",
-        "Urologia",
-        "Oftalmologia",
-        "Endocrinologia",
-        "Gastroenterologia",
-        "Psiquiatria",
-        "Otorrinolaringologia",
-        "Reumatologia",
-        "Nefrologia",
-        "Oncologia",
-        "Hematologia",
-        "Pneumologia",
-        "Infectologia",
-        "Cirurgia Geral",
-        "Anestesiologia",
-        "Clínica Médica",
-        "Medicina do Trabalho",
-        "Medicina Esportiva",
-        "Medicina Intensiva",
-        "Radiologia",
-        "Hepatologia",
-        "Angiologia",
-        "Nutrologia",
-        "Geriatria",
-        "Imunologia",
+        "Pediatria", "Cardiologia", "Dermatologia", "Ortopedia", "Neurologia",
+        "Ginecologia", "Urologia", "Oftalmologia", "Endocrinologia", "Gastroenterologia",
+        "Psiquiatria", "Otorrinolaringologia", "Reumatologia", "Nefrologia", "Oncologia",
+        "Hematologia", "Pneumologia", "Infectologia", "Cirurgia Geral", "Anestesiologia",
+        "Clínica Médica", "Medicina do Trabalho", "Medicina Esportiva", "Medicina Intensiva",
+        "Radiologia", "Hepatologia", "Angiologia", "Nutrologia", "Geriatria", "Imunologia",
       ],
     };
   },
   methods: {
-    statusClass(status) {
-      return {
-        "text-danger": status.includes("Cancelada"),
-        "text-success": status.includes("Confirmada"),
-        "text-warning": status.includes("Pendente")
-      };
-    },
-    statusIcon(status) {
-      return {
-        "Cancelada pelo paciente": "fas fa-times-circle",
-        "Confirmada": "fas fa-check-circle",
-        "Pendente": "fas fa-clock"
-      }[status] || "fas fa-info-circle";
-    },
-    formatarValorConsulta(event) {
-      let valor = event.target.value.replace(/\D/g, "");
+    async carregarPerfil() {
+      try {
+        if (!this.medicoId) {
+          alert("Por favor, insira o ID do médico.");
+          return;
+        }
 
-      if (valor === "" || isNaN(parseInt(valor, 10))) {
-        this.formEdit.valorConsulta = "R$ 0,00";
-        return;
+        const response = await this.$http.get(`http://localhost:8080/Medico/${this.medicoId}`);
+
+        console.log(response.data); // Verifique a estrutura da resposta da API
+
+        if (response.status === 200) {
+          this.medico = response.data;
+
+          if (!this.medico) {
+            alert("Médico não encontrado.");
+          }
+        } else {
+          alert("Erro ao carregar o perfil do médico.");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar o perfil do médico:", error);
+        alert("Erro ao carregar o perfil. Verifique o ID e tente novamente.");
       }
-      valor = (parseInt(valor, 10) / 100).toFixed(2);
-      this.formEdit.valorConsulta = `R$ ${valor.replace(".", ",")}`;
     },
-    async carregarAgenda() {
-      // Simulação de dados para o histórico de consultas
-      this.agenda = [
-        { id: 1, pacienteNome: "João Silva", pacienteTelefone: "123456789", data: "2025-05-01 10:00", local: "Clínica A", especialidade: "Cardiologia", valorConsulta: "R$ 150,00", situacao: "Confirmada" },
-        { id: 2, pacienteNome: "Ana Oliveira", pacienteTelefone: "987654321", data: "2025-05-03 14:00", local: "Clínica B", especialidade: "Dermatologia", valorConsulta: "R$ 180,00", situacao: "Pendente" }
-      ];
-    },
-    formatarCPF(event) {
-      let cpf = event.target.value.replace(/\D/g, "");
-      cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
-      cpf = cpf.replace(/(\d{3})(\d)/, "$1.$2");
-      cpf = cpf.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-      this.formEdit.cpf = cpf;
-    },
-    formatarTelefone(event) {
-      let telefone = event.target.value.replace(/\D/g, "");
-      telefone = telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-      this.formEdit.telefoneConsultorio = telefone.slice(0, 15);
-    },
-    abrirModal(campo) {
-      this.fecharModal();
-      this.campoSelecionado = campo;
-      this.showModalEdit = true;
-      this.formEdit = { ...this.medico };
-    },
-    fecharModal() {
-      this.showModalEdit = false;
-      this.showModalSenha = false;
-      this.showModalExclusao = false;
-    },
-    salvarEdicao() {
-      alert("Simulando a atualização dos dados.");
-      this.fecharModal();
-    },
-    excluirConta() {
-      alert("Simulando a exclusão de conta.");
-    },
+
+    // Funções auxiliares (para formatar valores, status, etc.)
     formatDia(dia) {
       const dias = {
         segunda: "Segunda-feira",
@@ -421,15 +349,14 @@ export default {
       };
       return dias[dia] || dia;
     },
+
     gerarHorarios(inicio, fim, intervalo) {
       const horarios = [];
       let [hora, minuto] = inicio.split(":").map(Number);
       const [fimHora, fimMinuto] = fim.split(":").map(Number);
 
       while (hora < fimHora || (hora === fimHora && minuto <= fimMinuto)) {
-        horarios.push(
-          `${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`
-        );
+        horarios.push(`${String(hora).padStart(2, "0")}:${String(minuto).padStart(2, "0")}`);
         minuto += intervalo;
         if (minuto >= 60) {
           minuto -= 60;
@@ -440,30 +367,12 @@ export default {
     },
   },
   mounted() {
-    this.medico = {
-      nomeCompleto: "Dr. João Souza",
-      email: "dr.joao@saude.com",
-      telefoneConsultorio: "(11) 12345-6789",
-      crm: "12345",
-      especialidade: "Cardiologia",
-      uf: "SP",
-      sexo: "Masculino",
-      cpf: "123.456.789-10",
-      valorConsulta: "R$ 200,00",
-      dataNascimento: "1980-01-01",
-      diasAtendimento: {
-        segunda: ["08:00", "18:00"],
-        terca: ["08:00", "18:00"],
-        quarta: ["08:00", "18:00"],
-        quinta: ["08:00", "18:00"],
-        sexta: ["08:00", "18:00"],
-        sabado: [],
-      },
-    };
-    this.carregarAgenda();
+    // Pode começar com médico nulo ou vazio
+    this.medico = null;
   },
 };
 </script>
+
 
 
 <style scoped>

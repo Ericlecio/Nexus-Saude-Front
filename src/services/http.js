@@ -15,4 +15,11 @@ const pacienteApi = axios.create({
   },
 });
 
-export { medicoApi, pacienteApi };
+const diasAtendimentoApi = axios.create({
+  baseURL: "http://localhost:8080/dias",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export { medicoApi, pacienteApi, diasAtendimentoApi };
