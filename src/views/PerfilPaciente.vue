@@ -117,26 +117,6 @@
           <label>Data de Nascimento</label>
           <input v-model="formEdit.dataNascimento" type="date" class="form-control" required :max="hoje" />
 
-          <!-- Redefinir Senha -->
-          <div class="card shadow-sm mb-4">
-            <div class="card-body">
-              <h5 class="card-title mb-3 text-danger">
-                <i class="fas fa-lock me-2"></i><strong>Redefinir Senha</strong>
-              </h5>
-              <!-- Senha Antiga -->
-              <label class="form-label">Senha Antiga</label>
-              <input type="password" v-model="senhaAntiga" class="form-control mb-2" placeholder="Digite a senha antiga"
-                required />
-
-              <!-- Nova Senha -->
-              <label class="form-label">Nova Senha</label>
-              <input type="password" v-model="novaSenha" class="form-control mb-2" placeholder="Digite a nova senha"
-                required />
-
-              <button class="btn btn-warning" @click="redefinirSenha">Salvar Nova Senha</button>
-            </div>
-          </div>
-
           <div class="mt-3 text-center">
             <button type="submit" class="btn btn-success" :disabled="cpfInvalido">
               Salvar
@@ -167,7 +147,25 @@
         </div>
       </div>
     </div>
+    <!-- Redefinir Senha -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3 text-danger">
+          <i class="fas fa-lock me-2"></i><strong>Redefinir Senha</strong>
+        </h5>
+        <!-- Senha Antiga -->
+        <label class="form-label">Senha Antiga</label>
+        <input type="password" v-model="senhaAntiga" class="form-control mb-2" placeholder="Digite a senha antiga"
+          required />
 
+        <!-- Nova Senha -->
+        <label class="form-label">Nova Senha</label>
+        <input type="password" v-model="novaSenha" class="form-control mb-2" placeholder="Digite a nova senha"
+          required />
+
+        <button class="btn btn-warning" @click="redefinirSenha">Salvar Nova Senha</button>
+      </div>
+    </div>
     <Footer />
   </div>
 </template>
