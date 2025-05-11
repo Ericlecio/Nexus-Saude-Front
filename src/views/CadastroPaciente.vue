@@ -52,6 +52,11 @@
                                     <label class="form-label">Informe o nome do plano</label>
                                     <input v-model="form.planoSaude" type="text" class="form-control" required />
                                 </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Senha</label>
+                                    <input v-model="form.senha" type="password" class="form-control" required />
+                                </div>
                             </div>
 
                             <div class="text-end mt-4">
@@ -93,7 +98,8 @@ export default {
                 dataNascimento: "",
                 telefone: "",
                 email: "",
-                planoSaude: ""
+                planoSaude: "",
+                senha: ""  // Campo para senha
             }
         };
     },
@@ -112,6 +118,7 @@ export default {
             this.form.telefone = handlePhoneInput(e.target.value);
         },
         async submitForm() {
+            // Validações antes de enviar os dados
             if (this.planoSelecionado !== "Outro") {
                 this.form.planoSaude = this.planoSelecionado;
             }
@@ -121,8 +128,13 @@ export default {
                 return;
             }
 
+            if (!this.form.senha) {
+                alert("Informe uma senha.");
+                return;
+            }
+
             try {
-                // Enviar a requisição para o backend
+                // Enviar a requisição para o backend com os dados do formulário
                 const response = await pacienteApi.post("/inserir", {
                     ...this.form,
                     dataCadastro: new Date().toISOString()  // Garantindo que a data seja enviada corretamente
@@ -130,14 +142,30 @@ export default {
 
                 alert("Paciente cadastrado com sucesso!");
                 console.log(response.data);
+                this.resetForm();  // Limpa o formulário após o cadastro
             } catch (error) {
                 console.error("Erro ao cadastrar paciente:", error);
                 alert("Erro ao cadastrar paciente.");
             }
+        },
+
+        resetForm() {
+            // Função para resetar o formulário após o envio
+            this.form = {
+                nomeCompleto: "",
+                cpf: "",
+                dataNascimento: "",
+                telefone: "",
+                email: "",
+                planoSaude: "",
+                senha: ""
+            };
+            this.planoSelecionado = "";
         }
     }
 };
 </script>
+
 
 <style scoped>
 /* Animação de entrada suave */

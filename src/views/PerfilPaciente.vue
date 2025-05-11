@@ -9,7 +9,6 @@
       <div class="mb-4">
         <label for="pacienteId">Digite o ID do Paciente:</label>
         <input type="number" v-model="pacienteId" class="form-control" placeholder="ID do Paciente" />
-        <!-- Botão de pesquisa para carregar o perfil do paciente -->
         <button class="btn btn-primary mt-3" @click="carregarPerfil">Pesquisar</button>
       </div>
 
@@ -32,7 +31,6 @@
             </p>
             <p><strong>CPF:</strong> {{ paciente.cpf || "Não informado" }}</p>
             <p><strong>Data de Nascimento:</strong> {{ paciente.dataNascimento || "Não informado" }}</p>
-
           </div>
         </div>
 
@@ -119,6 +117,26 @@
           <label>Data de Nascimento</label>
           <input v-model="formEdit.dataNascimento" type="date" class="form-control" required :max="hoje" />
 
+          <!-- Redefinir Senha -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-3 text-danger">
+                <i class="fas fa-lock me-2"></i><strong>Redefinir Senha</strong>
+              </h5>
+              <!-- Senha Antiga -->
+              <label class="form-label">Senha Antiga</label>
+              <input type="password" v-model="senhaAntiga" class="form-control mb-2" placeholder="Digite a senha antiga"
+                required />
+
+              <!-- Nova Senha -->
+              <label class="form-label">Nova Senha</label>
+              <input type="password" v-model="novaSenha" class="form-control mb-2" placeholder="Digite a nova senha"
+                required />
+
+              <button class="btn btn-warning" @click="redefinirSenha">Salvar Nova Senha</button>
+            </div>
+          </div>
+
           <div class="mt-3 text-center">
             <button type="submit" class="btn btn-success" :disabled="cpfInvalido">
               Salvar
@@ -160,7 +178,6 @@ import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
 import BotaoVoltar from "@/components/BotaoVoltar.vue";
 
-
 export default {
   name: "PerfilPaciente",
   components: {
@@ -177,6 +194,8 @@ export default {
       hoje: new Date().toISOString().split("T")[0],
       cpfInvalido: false,
       pacienteId: null, // Recebe o ID do paciente
+      novaSenha: "",
+      senhaAntiga: "" // Adicionando campo para senha antiga
     };
   },
   methods: {
@@ -224,12 +243,30 @@ export default {
           console.error("Erro ao excluir a conta:", error);
         });
     },
-  },
-  mounted() {
-    // Não chamamos carregarPerfil() automaticamente no mounted, pois agora depende do clique no botão de pesquisa
-  },
+    async redefinirSenha() {
+      if (!this.senhaAntiga || !this.novaSenha) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      try {
+        const response = await pacienteApi.put(`/redefinir-senha/${this.pacienteId}`, {
+          senhaAntiga: this.senhaAntiga,
+          novaSenha: this.novaSenha
+        });
+
+        alert(response.data);
+        this.fecharModal();
+      } catch (error) {
+        console.error("Erro ao redefinir senha:", error);
+        alert("Erro ao redefinir senha.");
+      }
+    }
+  }
 };
 </script>
+
+
 
 
 <style scoped>
