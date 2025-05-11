@@ -235,7 +235,7 @@ export default {
       pacienteApi.delete(`/deletar/${this.pacienteId}`)
         .then(() => {
           alert("Conta excluída com sucesso!");
-          this.$router.push("/login");
+          this.$router.push("/LoginPaciente");
         })
         .catch(error => {
           console.error("Erro ao excluir a conta:", error);
