@@ -144,11 +144,29 @@ export default {
     components: { Sidebar },
     data() {
         return {
-            doctorsCount: 50,
-            patientsCount: 120,
-            agendamentosAtivos: 30,
-            consultasRealizadas: 200
+            doctorsCount: 0,
+            patientsCount: 0,
+            agendamentosAtivos: 0,
+            consultasRealizadas: 0
         };
+    },async mounted() {
+        await this.fetchStats();
+    },
+    methods: {
+        async fetchStats() {
+            try {
+                const response = await fetch("http://localhost:8080/admin/dashboard-stats");
+                const data = await response.json();
+                this.doctorsCount = data.doctorsCount;
+                this.patientsCount = data.patientsCount;
+                this.agendamentosAtivos = data.agendamentosAtivos;
+                this.consultasRealizadas = data.consultasRealizadas;
+            } catch (error) {
+                console.error("Erro ao buscar estatísticas", error);
+            }
+        }
     }
+
+
 };
 </script>
