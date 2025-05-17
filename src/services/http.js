@@ -16,10 +16,15 @@ const pacienteApi = axios.create({
 });
 
 const diasAtendimentoApi = axios.create({
-  baseURL: "http://localhost:8080/dias",
+  baseURL: "http://localhost:8080/DiasAtendimento", // <-- igual ao seu @RequestMapping
+  headers: { "Content-Type": "application/json" },
+});
+
+const AgendamentoApi = axios.create({
+  baseURL: "http://localhost:8080/agendamento",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-export { medicoApi, pacienteApi, diasAtendimentoApi };
+export { medicoApi, pacienteApi, diasAtendimentoApi, AgendamentoApi };

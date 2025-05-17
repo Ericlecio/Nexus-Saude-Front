@@ -142,107 +142,6 @@
   </div>
 </template>
 
-<style scoped>
-/* Animação para suavizar a entrada da logo */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Estilo da logo adaptado para melhor legibilidade e consistência */
-.logo-small {
-  max-width: 120px;
-  height: auto;
-  margin-top: 100%;
-  margin-bottom: 16px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  background-color: transparent;
-  box-shadow: none;
-  border-radius: 12px;
-  animation: fadeIn 0.8s ease-in-out;
-}
-
-/* Barra de progresso suave */
-.progress-bar {
-  transition: width 0.5s ease-in-out;
-  background: linear-gradient(90deg, #007bff, #17a2b8);
-}
-
-/* Cartão principal */
-.card {
-  background: #ffffff;
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
-  position: relative;
-}
-
-/* Botões */
-button {
-  transition: all 0.25s ease-in-out;
-  border-radius: 0.6rem;
-}
-
-button:hover {
-  transform: scale(1.04);
-}
-
-/* Campos de formulário */
-.form-control,
-.form-select {
-  border-radius: 12px;
-  border: 1px solid #ced4da;
-  font-size: 0.95rem;
-  box-shadow: none;
-  padding: 10px 14px;
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
-  outline: none;
-}
-
-/* Botão de senha */
-.input-group button {
-  border-radius: 0 0.6rem 0.6rem 0;
-}
-
-/* Labels */
-label.form-label {
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 4px;
-}
-
-/* Avisos */
-small.text-danger {
-  font-size: 0.85rem;
-  margin-top: 2px;
-  display: block;
-}
-
-/* Responsividade básica */
-@media (max-width: 768px) {
-  .logo-small {
-    max-width: 90px;
-    margin-bottom: 12px;
-  }
-
-  button.btn {
-    width: 100%;
-  }
-}
-</style>
 
 <script>
 import Navbar from '@/components/Navbar.vue';
@@ -381,3 +280,107 @@ export default {
   }
 };
 </script>
+
+
+
+<style scoped>
+/* Animação para suavizar a entrada da logo */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilo da logo adaptado para melhor legibilidade e consistência */
+.logo-small {
+  max-width: 120px;
+  height: auto;
+  margin-top: 100%;
+  margin-bottom: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: transparent;
+  box-shadow: none;
+  border-radius: 12px;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Barra de progresso suave */
+.progress-bar {
+  transition: width 0.5s ease-in-out;
+  background: linear-gradient(90deg, #007bff, #17a2b8);
+}
+
+/* Cartão principal */
+.card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  position: relative;
+}
+
+/* Botões */
+button {
+  transition: all 0.25s ease-in-out;
+  border-radius: 0.6rem;
+}
+
+button:hover {
+  transform: scale(1.04);
+}
+
+/* Campos de formulário */
+.form-control,
+.form-select {
+  border-radius: 12px;
+  border: 1px solid #ced4da;
+  font-size: 0.95rem;
+  box-shadow: none;
+  padding: 10px 14px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  outline: none;
+}
+
+/* Botão de senha */
+.input-group button {
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+
+/* Labels */
+label.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px;
+}
+
+/* Avisos */
+small.text-danger {
+  font-size: 0.85rem;
+  margin-top: 2px;
+  display: block;
+}
+
+/* Responsividade básica */
+@media (max-width: 768px) {
+  .logo-small {
+    max-width: 90px;
+    margin-bottom: 12px;
+  }
+
+  button.btn {
+    width: 100%;
+  }
+}
+</style>
