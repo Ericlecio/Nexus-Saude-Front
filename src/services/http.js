@@ -2,14 +2,14 @@
 import axios from "axios";
 
 const medicoApi = axios.create({
-  baseURL: "http://localhost:8080/Medico",
+  baseURL: "http://localhost:8080/medico",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 const pacienteApi = axios.create({
-  baseURL: "http://localhost:8080/Paciente",
+  baseURL: "http://localhost:8080/paciente",
   headers: {
     "Content-Type": "application/json",
   },

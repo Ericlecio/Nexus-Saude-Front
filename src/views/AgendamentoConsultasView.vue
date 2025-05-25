@@ -140,10 +140,21 @@ export default {
       this.form.valorConsulta = medico.valorConsulta || "";
 
       try {
-        const response = await diasAtendimentoApi.get(`/listar/${medico.id}`);
-        this.horariosDisponiveis = this.gerarHorarios(response.data);
+        const responseDias = await diasAtendimentoApi.get(`/listar/${medico.id}`);
+        const responseAgendamentos = await AgendamentoApi.get(`/medico/${medico.id}`);
+
+        const agendamentosDoMedico = responseAgendamentos.data;
+
+        // Gerar todos os horários possíveis
+        let todosHorarios = this.gerarHorarios(responseDias.data);
+
+        // Filtrar horários já agendados
+        this.horariosDisponiveis = todosHorarios.filter(horario => {
+          return !agendamentosDoMedico.some(ag => ag.data === horario);
+        });
+
       } catch (error) {
-        alert("Erro ao carregar horários");
+        alert("Erro ao carregar horários/agendamentos");
         console.error(error);
       }
     },
@@ -171,16 +182,18 @@ export default {
           if (diasSemanaMap[item.diaSemana?.toUpperCase()] === diaSemana) {
             const [h, m] = item.horario.split(":");
             const dataHora = new Date(data);
-            dataHora.setHours(h, m, 0);
+            dataHora.setHours(h, m, 0, 0);
 
-            const iso = dataHora.toISOString().slice(0, 16); // ex: 2025-05-18T14:00
-            horarios.push(iso.replace("T", " ")); // ex: 2025-05-18 14:00
+            const iso = dataHora.toISOString();
+            const horarioFormatado = iso.substring(0, 19); // 2025-05-18T14:00:00
+            horarios.push(horarioFormatado);
           }
         });
       }
 
       return horarios;
     },
+
 
     async carregarPacientes() {
       try {
@@ -194,14 +207,45 @@ export default {
 
     async submitForm() {
       try {
-        await AgendamentoApi.post("/", this.form);
+        if (!this.form.especialidade || !this.form.medicoId || !this.form.pacienteId || !this.form.data) {
+          alert("Preencha todos os campos obrigatórios.");
+          return;
+        }
+
+        let valor = this.form.valorConsulta;
+        if (typeof valor === "string") {
+          valor = parseFloat(valor.toString().replace(/[^\d.,-]/g, '').replace(',', '.'));
+        }
+
+        const payload = {
+          especialidade: this.form.especialidade,
+          local: this.form.local,
+          data: this.form.data,
+          medicoId: this.form.medicoId,
+          pacienteId: this.form.pacienteId,
+          situacaoId: this.form.situacaoId,
+          telefoneConsultorio: this.form.telefoneConsultorio,
+          valorConsulta: valor
+        };
+
+        await AgendamentoApi.post("/inserir", payload);
+
         alert("Consulta agendada com sucesso!");
         this.resetForm();
+        // Atualiza os horários disponíveis após o agendamento
+        await this.carregarDadosMedico();
+
       } catch (error) {
-        alert("Erro ao agendar");
+        if (error.response && error.response.status === 409) {
+          alert("Horário já está ocupado. Escolha outro horário.");
+        } else {
+          alert("Erro ao agendar");
+        }
         console.error(error);
       }
     },
+
+
 
     resetForm() {
       this.form = {

@@ -142,7 +142,6 @@
   </div>
 </template>
 
-
 <script>
 import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
@@ -235,6 +234,23 @@ export default {
     proximo() {
       this.step++;
     },
+    gerarHorariosDia(inicio, fim, duracao) {
+      if (!inicio || !fim || !duracao) return [];
+
+      const [hInicio, mInicio] = inicio.split(':').map(Number);
+      const [hFim, mFim] = fim.split(':').map(Number);
+
+      let start = new Date(0, 0, 0, hInicio, mInicio, 0);
+      let end = new Date(0, 0, 0, hFim, mFim, 0);
+      let horarios = [];
+
+      while (start <= new Date(end.getTime() - duracao * 60000)) {
+        horarios.push(start.toTimeString().substring(0, 5));
+        start = new Date(start.getTime() + duracao * 60000);
+      }
+
+      return horarios;
+    },
     async submitForm() {
       try {
         const valor = parseFloat(this.form.valorConsulta.replace(/[^\d,-]/g, '').replace(',', '.'));
@@ -244,12 +260,21 @@ export default {
           return;
         }
 
-        const diasAtendimento = Object.keys(this.diasAtendimento).map(dia => ({
-          diaSemana: dia,
-          horario: `${this.diasAtendimento[dia].inicio} - ${this.diasAtendimento[dia].fim}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }));
+        const diasAtendimento = [];
+
+        for (const [dia, intervalo] of Object.entries(this.diasAtendimento)) {
+          if (!intervalo.inicio || !intervalo.fim) continue;
+
+          const horarios = this.gerarHorariosDia(intervalo.inicio, intervalo.fim, Number(this.form.tempoConsulta));
+          for (const horario of horarios) {
+            diasAtendimento.push({
+              diaSemana: dia,
+              horario: horario,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        }
 
         const payload = {
           nome: this.form.nomeCompleto,
@@ -264,7 +289,7 @@ export default {
           especialidade: this.form.especialidade,
           valorConsulta: valor,
           tempoConsulta: this.form.tempoConsulta,
-          diasAtendimento: diasAtendimento,  // Enviar os dias de atendimento
+          diasAtendimento: diasAtendimento,
         };
 
         const response = await medicoApi.post('/inserir', payload);
@@ -276,10 +301,10 @@ export default {
         alert("Erro ao cadastrar médico. Verifique os dados e tente novamente.");
       }
     }
-
   }
 };
 </script>
+
 
 
 
