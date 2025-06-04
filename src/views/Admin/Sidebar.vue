@@ -1,17 +1,25 @@
 <template>
     <div class="sidebar">
         <div class="sidebar-header">
+            <img src="@/assets/img/NexusSaude_vertical.png" alt="Logo" class="logo" />
             <h2>Admin</h2>
         </div>
         <ul class="nav-list">
             <li><router-link to="dashboardAdmin">📊 Dashboard</router-link></li>
-            <li><a href="#" @click.prevent="telaAtual = 'medicos'">Ver Médicos</a></li>
+            <li><router-link to="/doctors">🩺 Médicos</router-link></li>
             <li><router-link to="/patients">🙍‍♂️ Pacientes</router-link></li>
             <li><router-link to="/consultas">📁 Consultas</router-link></li>
             <li><router-link to="/relatorios">📄 Relatórios</router-link></li>
         </ul>
     </div>
 </template>
+
+
+<script>
+export default {
+    name: 'Sidebar'
+};
+</script>
 
 <style scoped>
 .sidebar {
@@ -25,6 +33,15 @@
     padding: 30px 20px;
     box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
 }
+
+.logo {
+    width: 80px;
+    height: auto;
+    margin-bottom: 10px;
+    filter: brightness(0) invert(1);
+    /* Deixa branco */
+}
+
 
 .sidebar-header {
     font-size: 1.6rem;
@@ -59,9 +76,3 @@
     color: #000;
 }
 </style>
-
-<script>
-export default {
-    name: 'Sidebar'
-};
-</script>
