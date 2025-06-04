@@ -13,6 +13,8 @@ import LoginMedico from "../views/LoginMedico.vue";
 import DashboardAdmin from "../views/Admin/DashboardAdmin.vue";
 import LoginAdmin from "@/views/LoginAdmin.vue";
 import CadastroPaciente from "@/views/CadastroPaciente.vue";
+import DoctorsList from "@/views/Admin/DoctorsList.vue";
+import EdicaoMedicoView from "@/views/EdicaoMedicoView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,6 +55,12 @@ const router = createRouter({
       component: CadastroMedicoView,
     },
     {
+      path: "/medico/editar/:id",
+      name: "editDoctor",
+      component: EdicaoMedicoView,
+      props: true,
+    },
+    {
       path: "/contato",
       name: "contato",
       component: ContatoView,
@@ -90,6 +98,11 @@ const router = createRouter({
       name: "agenda",
       props: true,
       component: AgendaMedica,
+    },
+    {
+      path: "/doctorList",
+      name: "doctor",
+      component: DoctorsList,
     },
   ],
 });

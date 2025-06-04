@@ -4,8 +4,8 @@
             <h2>Admin</h2>
         </div>
         <ul class="nav-list">
-            <li><router-link to="/">📊 Dashboard</router-link></li>
-            <li><router-link to="/doctors">🩺 Médicos</router-link></li>
+            <li><router-link to="dashboardAdmin">📊 Dashboard</router-link></li>
+            <li><a href="#" @click.prevent="telaAtual = 'medicos'">Ver Médicos</a></li>
             <li><router-link to="/patients">🙍‍♂️ Pacientes</router-link></li>
             <li><router-link to="/consultas">📁 Consultas</router-link></li>
             <li><router-link to="/relatorios">📄 Relatórios</router-link></li>
