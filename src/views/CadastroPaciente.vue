@@ -135,7 +135,7 @@ export default {
 
             try {
                 // Enviar a requisição para o backend com os dados do formulário
-                const response = await pacienteApi.post("/inserir", {
+                const response = await pacienteApi.post("/registrar", {
                     ...this.form,
                     dataCadastro: new Date().toISOString()  // Garantindo que a data seja enviada corretamente
                 });
