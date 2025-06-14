@@ -140,7 +140,13 @@ export default {
                     dataCadastro: new Date().toISOString()  // Garantindo que a data seja enviada corretamente
                 });
 
-                alert("Paciente cadastrado com sucesso!");
+                const token = sessionStorage.getItem("authToken");
+                if (token) {
+                    alert("Paciente cadastrado com sucesso pelo ADMIN!");
+                } else {
+                    alert("Cadastro realizado! Faça login para acessar sua conta.");
+                }
+
                 console.log(response.data);
                 this.resetForm();  // Limpa o formulário após o cadastro
             } catch (error) {

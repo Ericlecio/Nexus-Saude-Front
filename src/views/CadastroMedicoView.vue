@@ -145,7 +145,7 @@
 <script>
 import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
-import { medicoApi } from '@/services/http'; // Importando apenas medicoApi
+import { medicoApi } from '@/services/http';
 import {
   validarNome,
   validarCPF,
@@ -292,13 +292,28 @@ export default {
           diasAtendimento: diasAtendimento,
         };
 
-        const response = await medicoApi.post('/inserir', payload);
+        const token = sessionStorage.getItem("authToken");
+        const isAdminCadastro = !!token;
+        const url = isAdminCadastro ? '/admin-criar' : '/registrar';
 
-        alert("Médico e seus dias de atendimento cadastrados com sucesso!");
+        const response = await medicoApi.post(url, payload, {
+          headers: isAdminCadastro ? { Authorization: `Bearer ${token}` } : {}
+        });
+
+        if (isAdminCadastro) {
+          alert("Médico cadastrado com sucesso pelo administrador!");
+        } else {
+          alert("Cadastro realizado! Você já pode acessar sua conta.");
+        }
+
         console.log(response.data);
       } catch (error) {
         console.error("Erro ao cadastrar médico:", error);
-        alert("Erro ao cadastrar médico. Verifique os dados e tente novamente.");
+        if (error.response && error.response.status === 403) {
+          alert("Acesso negado: você precisa ser ADMIN.");
+        } else {
+          alert("Erro ao cadastrar médico. Verifique os dados e tente novamente.");
+        }
       }
     }
   }
@@ -306,10 +321,7 @@ export default {
 </script>
 
 
-
-
 <style scoped>
-/* Animação para suavizar a entrada da logo */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -322,7 +334,6 @@ export default {
   }
 }
 
-/* Estilo da logo adaptado para melhor legibilidade e consistência */
 .logo-small {
   max-width: 120px;
   height: auto;
@@ -337,13 +348,11 @@ export default {
   animation: fadeIn 0.8s ease-in-out;
 }
 
-/* Barra de progresso suave */
 .progress-bar {
   transition: width 0.5s ease-in-out;
   background: linear-gradient(90deg, #007bff, #17a2b8);
 }
 
-/* Cartão principal */
 .card {
   background: #ffffff;
   border-radius: 1.5rem;
@@ -351,7 +360,6 @@ export default {
   position: relative;
 }
 
-/* Botões */
 button {
   transition: all 0.25s ease-in-out;
   border-radius: 0.6rem;
@@ -361,7 +369,6 @@ button:hover {
   transform: scale(1.04);
 }
 
-/* Campos de formulário */
 .form-control,
 .form-select {
   border-radius: 12px;
@@ -378,26 +385,22 @@ button:hover {
   outline: none;
 }
 
-/* Botão de senha */
 .input-group button {
   border-radius: 0 0.6rem 0.6rem 0;
 }
 
-/* Labels */
 label.form-label {
   font-weight: 600;
   color: #495057;
   margin-bottom: 4px;
 }
 
-/* Avisos */
 small.text-danger {
   font-size: 0.85rem;
   margin-top: 2px;
   display: block;
 }
 
-/* Responsividade básica */
 @media (max-width: 768px) {
   .logo-small {
     max-width: 90px;
