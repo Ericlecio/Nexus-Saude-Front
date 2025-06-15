@@ -270,8 +270,7 @@ export default {
             diasAtendimento.push({
               diaSemana: dia,
               horario: horario,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
+             
             });
           }
         }
