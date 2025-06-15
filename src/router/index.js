@@ -50,7 +50,7 @@ const router = createRouter({
       component: CadastroPaciente,
     },
     {
-      path: "/cadastro",
+      path: "/cadastroMedico",
       name: "CadastroMedicoView",
       component: CadastroMedicoView,
     },
