@@ -10,7 +10,7 @@
                     <div class="stat-card">
                         <h3>Médicos Cadastrados</h3>
                         <p>{{ doctorsCount }}</p>
-                        <a href="#" @click.prevent="telaAtual = 'medicos'">Ver Médicos</a>
+                        <button @click="telaAtual = 'medicos'">Ver Médicos</button>
                     </div>
                     <div class="stat-card">
                         <h3>Pacientes Cadastrados</h3>
@@ -41,7 +41,74 @@
             <!-- LISTA DE MÉDICOS -->
             <template v-else-if="telaAtual === 'medicos'">
                 <button class="btn-voltar" @click="telaAtual = 'dashboard'">← Voltar</button>
-                <DoctorList @novo-medico="telaAtual = 'cadastroMedico'" />
+                <h2>Lista de Médicos</h2>
+                <div class="top-bar">
+                    <button @click="irParaCadastro">Adicionar Médico</button>
+                    <input type="text" v-model="searchTerm" placeholder="Buscar por nome, CPF ou CRM..."
+                        class="search-input" />
+                </div>
+
+                <div v-if="doctors.length === 0" class="no-doctors">
+                    <p>Não há médicos cadastrados.</p>
+                </div>
+
+                <table v-else>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Especialidade</th>
+                            <th>Email</th>
+                            <th>CRM</th>
+                            <th>Telefone</th>
+                            <th>UF</th>
+                            <th>Valor</th>
+                            <th>Dias de Atendimento</th>
+                            <th>CPF</th>
+                            <th>Sexo</th>
+                            <th>Tempo Consulta</th>
+                            <th>Data Nasc.</th>
+                            <th>Cadastrado</th>
+                            <th>Criado em</th>
+                            <th>Atualizado em</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="doctor in filteredDoctors" :key="doctor.id">
+                            <td>{{ doctor.nome }}</td>
+                            <td>{{ doctor.especialidade }}</td>
+                            <td>{{ doctor.email }}</td>
+                            <td>{{ doctor.crm }}</td>
+                            <td>{{ doctor.telefoneConsultorio }}</td>
+                            <td>{{ doctor.uf }}</td>
+                            <td>R$ {{ doctor.valorConsulta?.toFixed(2).replace('.', ',') }}</td>
+                            <td>
+                                <ul>
+                                    <li v-for="dia in doctor.diasAtendimento" :key="dia.id">
+                                        {{ dia.diaSemana }} - {{ dia.horario }}
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>{{ doctor.cpf || '-' }}</td>
+                            <td>{{ doctor.sexo || '-' }}</td>
+                            <td>{{ doctor.tempoConsulta ? doctor.tempoConsulta + ' min' : '-' }}</td>
+                            <td>{{ formatarData(doctor.dataNascimento) }}</td>
+                            <td>{{ formatarDataHora(doctor.dataCadastro) }}</td>
+                            <td>{{ formatarDataHora(doctor.createdAt) }}</td>
+                            <td>{{ formatarDataHora(doctor.updatedAt) }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="edit" @click="editarMedico(doctor)">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    <button class="delete" @click="excluirMedico(doctor.id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </template>
 
             <!-- CADASTRO DE MÉDICO -->
@@ -55,22 +122,35 @@
 
 <script>
 import Sidebar from '/src/views/Admin/Sidebar.vue';
-import DoctorList from '/src/views/Admin/DoctorsList.vue'; // ajuste o caminho se necessário
-import CadastroMedico from '/src/views/CadastroMedicoView.vue'; // ajuste conforme seu projeto
+import CadastroMedico from '/src/views/CadastroMedicoView.vue';
+import { medicoApi } from '@/services/http';
 
 export default {
-    components: { Sidebar, DoctorList, CadastroMedico },
+    components: { Sidebar, CadastroMedico },
     data() {
         return {
             telaAtual: 'dashboard',
+            doctors: [],
+            searchTerm: "",
             doctorsCount: 0,
             patientsCount: 0,
             agendamentosAtivos: 0,
             consultasRealizadas: 0
         };
     },
+    computed: {
+        filteredDoctors() {
+            const term = this.searchTerm.toLowerCase();
+            return this.doctors.filter(doc =>
+                doc.nome?.toLowerCase().includes(term) ||
+                doc.cpf?.includes(term) ||
+                doc.crm?.toLowerCase().includes(term)
+            );
+        }
+    },
     async mounted() {
         await this.fetchStats();
+        this.fetchDoctors();
     },
     methods: {
         async fetchStats() {
@@ -84,10 +164,43 @@ export default {
             } catch (error) {
                 console.error("Erro ao buscar estatísticas", error);
             }
+        },
+        async fetchDoctors() {
+            try {
+                const response = await medicoApi.get('/listar');
+                this.doctors = response.data;
+            } catch (error) {
+                console.error('Erro ao buscar médicos:', error);
+            }
+        },
+        irParaCadastro() {
+            this.telaAtual = 'cadastroMedico';
+        },
+        editarMedico(doctor) {
+            this.$router.push({ name: 'editDoctor', params: { id: doctor.id } });
+        },
+        async excluirMedico(id) {
+            if (confirm('Deseja realmente excluir?')) {
+                try {
+                    await medicoApi.delete(`/deletar/${id}`);
+                    this.fetchDoctors();
+                } catch (error) {
+                    console.error('Erro ao excluir médico:', error);
+                }
+            }
+        },
+        formatarData(data) {
+            if (!data) return '-';
+            return new Date(data).toLocaleDateString('pt-BR');
+        },
+        formatarDataHora(dataHora) {
+            if (!dataHora) return '-';
+            return new Date(dataHora).toLocaleString('pt-BR');
         }
     }
 };
 </script>
+
 
 <style scoped>
 .dashboard {

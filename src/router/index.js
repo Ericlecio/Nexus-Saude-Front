@@ -13,7 +13,7 @@ import LoginMedico from "../views/LoginMedico.vue";
 import DashboardAdmin from "../views/Admin/DashboardAdmin.vue";
 import LoginAdmin from "@/views/LoginAdmin.vue";
 import CadastroPaciente from "@/views/CadastroPaciente.vue";
-import DoctorsList from "@/views/Admin/DoctorsList.vue";
+import MedicoAdmin from "@/views/Admin/MedicoAdmin.vue";
 import EdicaoMedicoView from "@/views/EdicaoMedicoView.vue";
 
 const router = createRouter({
@@ -100,9 +100,9 @@ const router = createRouter({
       component: AgendaMedica,
     },
     {
-      path: "/doctorList",
-      name: "doctor",
-      component: DoctorsList,
+      path: "/medicoAdmin",
+      name: "medicoAdmin",
+      component: MedicoAdmin,
     },
   ],
 });
