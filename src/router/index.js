@@ -8,22 +8,22 @@ import ConsultasPacienteView from "@/views/ConsultasPacienteView.vue";
 import PerfilMedico from "@/views/PerfilMedico.vue";
 import PerfilPaciente from "@/views/PerfilPaciente.vue";
 import AgendaMedica from "@/views/AgendaMedica.vue";
-import LoginPaciente from "../views/LoginPaciente.vue";
-import LoginMedico from "../views/LoginMedico.vue";
+// import LoginMedico from "../views/LoginMedico.vue";
 import DashboardAdmin from "../views/Admin/DashboardAdmin.vue";
-import LoginAdmin from "@/views/LoginAdmin.vue";
+// import LoginAdmin from "@/views/LoginAdmin.vue";
 import CadastroPaciente from "@/views/CadastroPaciente.vue";
 import MedicoAdmin from "@/views/Admin/MedicoAdmin.vue";
 import EdicaoMedicoView from "@/views/EdicaoMedicoView.vue";
+import LoginView from "../views/LoginView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: "/loginAdmin",
-      name: "loginAdmin",
-      component: LoginAdmin,
-    },
+    // {
+    //   path: "/loginAdmin",
+    //   name: "loginAdmin",
+    //   component: LoginAdmin,
+    // },
     {
       path: "/dashboardAdmin",
       name: "DashboardAdmin",
@@ -35,15 +35,15 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: "/loginPaciente",
-      name: "loginPaciente",
-      component: LoginPaciente,
+      path: "/login",
+      name: "login",
+      component: LoginView,
     },
-    {
-      path: "/loginMedico",
-      name: "loginMedico",
-      component: LoginMedico,
-    },
+    // {
+    //   path: "/loginMedico",
+    //   name: "loginMedico",
+    //   component: LoginMedico,
+    // },
     {
       path: "/cadastroPaciente",
       name: "cadastroPaciente",

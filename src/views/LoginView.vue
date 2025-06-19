@@ -40,9 +40,6 @@
       <!-- Lado direito: Logo + Google -->
       <div class="logo-container">
         <img src="@/assets/img/NexusSaude_vertical.png" alt="Logo Nexus Saúde" class="logo" />
-        <button type="button" @click="loginWithGoogle" class="btn-google mt-10">
-          <i class="fab fa-google me-2"></i> Login com Google
-        </button>
       </div>
     </div>
   </div>
