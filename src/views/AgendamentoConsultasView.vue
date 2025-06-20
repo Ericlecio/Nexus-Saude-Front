@@ -12,7 +12,6 @@
 
             <form @submit.prevent="submitForm">
               <div class="row g-4">
-                <!-- Especialidade -->
                 <div class="col-md-4">
                   <label class="form-label">Especialidade</label>
                   <select v-model="form.especialidade" class="form-select" @change="filtrarMedicosPorEspecialidade"
@@ -22,48 +21,36 @@
                   </select>
                 </div>
 
-                <!-- Médico -->
                 <div class="col-md-4">
                   <label class="form-label">Médico</label>
                   <select v-model="form.medicoId" class="form-select" @change="carregarDadosMedico" required>
                     <option value="" disabled>Selecione</option>
-                    <option v-for="medico in medicosFiltrados" :key="medico.id" :value="medico.id">
-                      {{ medico.nome }}
+                    <option v-for="medico in medicosFiltrados" :key="medico.id" :value="medico.id">{{ medico.nome }}
                     </option>
                   </select>
                 </div>
 
-                <!-- Horário -->
                 <div class="col-md-4">
                   <label class="form-label">Horário Disponível</label>
                   <select v-model="form.data" class="form-select" required>
                     <option value="" disabled>Selecione</option>
-                    <option v-for="horario in horariosDisponiveis" :key="horario" :value="horario">
-                      {{ horario }}
+                    <option v-for="horario in horariosDisponiveis" :key="horario" :value="horario">{{ horario }}
                     </option>
                   </select>
                 </div>
               </div>
 
               <div class="row g-4 mt-3">
-                <!-- Paciente -->
                 <div class="col-md-6">
                   <label class="form-label">Paciente</label>
-                  <select v-model="form.pacienteId" class="form-select" required>
-                    <option value="" disabled>Selecione</option>
-                    <option v-for="paciente in pacientes" :key="paciente.id" :value="paciente.id">
-                      {{ paciente.nomeCompleto }}
-                    </option>
-                  </select>
+                  <input type="text" class="form-control" :value="nomePaciente" readonly />
                 </div>
 
-                <!-- Telefone -->
                 <div class="col-md-3">
                   <label class="form-label">Telefone do Consultório</label>
                   <input type="text" class="form-control" v-model="form.telefoneConsultorio" readonly />
                 </div>
 
-                <!-- Valor -->
                 <div class="col-md-3">
                   <label class="form-label">Valor da Consulta</label>
                   <input type="text" class="form-control" v-model="form.valorConsulta" readonly />
@@ -85,13 +72,15 @@
 <script>
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
-import { AgendamentoApi, medicoApi, diasAtendimentoApi, pacienteApi } from "@/services/http";
+import { AgendamentoApi, medicoApi, diasAtendimentoApi } from "@/services/http";
+import axios from "axios";
 
 export default {
   components: { Navbar, Footer },
   data() {
     return {
-      pacientes: [],
+      pacienteId: null,
+      nomePaciente: "",
       medicos: [],
       medicosFiltrados: [],
       especialidades: [],
@@ -104,169 +93,122 @@ export default {
         telefoneConsultorio: "",
         valorConsulta: "",
         local: "Clínica Nexus Saúde - Palmares",
-        situacaoId: 1, // Status: Confirmado
+        situacaoId: 1,
       },
     };
   },
   methods: {
+    async carregarPacienteLogado() {
+      try {
+        const response = await axios.get("http://localhost:8080/usuarios/logado", {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
+        });
+        const paciente = response.data;
+        this.pacienteId = paciente.id;
+        this.nomePaciente = paciente.nomeCompleto;
+        this.form.pacienteId = paciente.id;
+      } catch (error) {
+        alert("Erro ao carregar paciente logado");
+        console.error(error);
+      }
+    },
     async carregarMedicos() {
       try {
         const response = await medicoApi.get("/listar");
-        this.medicos = Array.isArray(response.data) ? response.data : [];
-
-        // Corrige nomes se vierem com nomeCompleto, etc.
-        this.especialidades = [
-          ...new Set(this.medicos.map(m => m.especialidade || ""))
-        ];
+        this.medicos = response.data || [];
+        this.especialidades = [...new Set(this.medicos.map(m => m.especialidade || ""))];
       } catch (error) {
         alert("Erro ao carregar médicos");
         console.error(error);
       }
     },
-
     filtrarMedicosPorEspecialidade() {
-      this.medicosFiltrados = this.medicos.filter(
-        m => m.especialidade === this.form.especialidade
-      );
+      this.medicosFiltrados = this.medicos.filter(m => m.especialidade === this.form.especialidade);
       this.form.medicoId = "";
       this.horariosDisponiveis = [];
     },
-
     async carregarDadosMedico() {
       const medico = this.medicos.find(m => m.id === this.form.medicoId);
       if (!medico) return;
-
       this.form.telefoneConsultorio = medico.telefoneConsultorio || "";
       this.form.valorConsulta = medico.valorConsulta || "";
-
       try {
         const responseDias = await diasAtendimentoApi.get(`/listar/${medico.id}`);
         const responseAgendamentos = await AgendamentoApi.get(`/medico/${medico.id}`);
-
-        const agendamentosDoMedico = responseAgendamentos.data;
-
-        // Gerar todos os horários possíveis
-        let todosHorarios = this.gerarHorarios(responseDias.data);
-
-        // Filtrar horários já agendados
-        this.horariosDisponiveis = todosHorarios.filter(horario => {
-          return !agendamentosDoMedico.some(ag => ag.data === horario);
-        });
-
+        const todosHorarios = this.gerarHorarios(responseDias.data);
+        this.horariosDisponiveis = todosHorarios.filter(h => !responseAgendamentos.data.some(a => a.data === h));
       } catch (error) {
-        alert("Erro ao carregar horários/agendamentos");
+        alert("Erro ao carregar horários");
         console.error(error);
       }
     },
-
     gerarHorarios(diasAtendimento) {
       const diasSemanaMap = {
-        "DOMINGO": 0,
-        "SEGUNDA": 1,
-        "TERÇA": 2,
-        "QUARTA": 3,
-        "QUINTA": 4,
-        "SEXTA": 5,
-        "SÁBADO": 6
+        "DOMINGO": 0, "SEGUNDA": 1, "TERÇA": 2, "QUARTA": 3,
+        "QUINTA": 4, "SEXTA": 5, "SÁBADO": 6
       };
-
       const hoje = new Date();
       const horarios = [];
-
       for (let i = 0; i < 14; i++) {
         const data = new Date();
         data.setDate(hoje.getDate() + i);
         const diaSemana = data.getDay();
-
         diasAtendimento.forEach(item => {
           if (diasSemanaMap[item.diaSemana?.toUpperCase()] === diaSemana) {
             const [h, m] = item.horario.split(":");
             const dataHora = new Date(data);
             dataHora.setHours(h, m, 0, 0);
-
-            const iso = dataHora.toISOString();
-            const horarioFormatado = iso.substring(0, 19); // 2025-05-18T14:00:00
-            horarios.push(horarioFormatado);
+            horarios.push(dataHora.toISOString().substring(0, 19));
           }
         });
       }
-
       return horarios;
     },
-
-
-    async carregarPacientes() {
-      try {
-        const response = await pacienteApi.get("/listar");
-        this.pacientes = Array.isArray(response.data) ? response.data : [];
-      } catch (error) {
-        alert("Erro ao carregar pacientes");
-        console.error(error);
-      }
-    },
-
     async submitForm() {
       try {
         if (!this.form.especialidade || !this.form.medicoId || !this.form.pacienteId || !this.form.data) {
           alert("Preencha todos os campos obrigatórios.");
           return;
         }
-
         let valor = this.form.valorConsulta;
         if (typeof valor === "string") {
-          valor = parseFloat(valor.toString().replace(/[^\d.,-]/g, '').replace(',', '.'));
+          valor = parseFloat(valor.replace(/[^\d.,-]/g, '').replace(',', '.'));
         }
-
-        const payload = {
-          especialidade: this.form.especialidade,
-          local: this.form.local,
-          data: this.form.data,
-          medicoId: this.form.medicoId,
-          pacienteId: this.form.pacienteId,
-          situacaoId: this.form.situacaoId,
-          telefoneConsultorio: this.form.telefoneConsultorio,
-          valorConsulta: valor
-        };
-
+        const payload = { ...this.form, valorConsulta: valor };
         await AgendamentoApi.post("/inserir", payload);
-
         alert("Consulta agendada com sucesso!");
         this.resetForm();
-        // Atualiza os horários disponíveis após o agendamento
         await this.carregarDadosMedico();
-
       } catch (error) {
         if (error.response && error.response.status === 409) {
-          alert("Horário já está ocupado. Escolha outro horário.");
+          alert("Horário já ocupado. Escolha outro.");
         } else {
           alert("Erro ao agendar");
         }
         console.error(error);
       }
     },
-
-
-
     resetForm() {
       this.form = {
         especialidade: "",
         medicoId: "",
-        pacienteId: "",
+        pacienteId: this.pacienteId,
         data: "",
         telefoneConsultorio: "",
         valorConsulta: "",
         local: "Clínica Nexus Saúde - Palmares",
-        situacaoId: 1
+        situacaoId: 1,
       };
       this.medicosFiltrados = [];
       this.horariosDisponiveis = [];
-    }
+    },
   },
-
   async mounted() {
+    await this.carregarPacienteLogado();
     await this.carregarMedicos();
-    await this.carregarPacientes();
-  }
+  },
 };
 </script>
 

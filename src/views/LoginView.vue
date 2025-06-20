@@ -2,7 +2,6 @@
   <Navbar />
   <div class="main-container">
     <div class="login-container">
-      <!-- Lado esquerdo: Formulário -->
       <div class="login-form">
         <div class="header">
           <h2>Bem-Vindo</h2>
@@ -37,7 +36,6 @@
         </div>
       </div>
 
-      <!-- Lado direito: Logo + Google -->
       <div class="logo-container">
         <img src="@/assets/img/NexusSaude_vertical.png" alt="Logo Nexus Saúde" class="logo" />
       </div>
@@ -45,6 +43,71 @@
   </div>
   <Footer />
 </template>
+
+<script>
+import axios from "axios";
+import Navbar from "@/components/Navbar.vue";
+import Footer from "@/components/Footer.vue";
+
+export default {
+  name: "LoginView",
+  components: { Navbar, Footer },
+  data() {
+    return {
+      email: "",
+      password: "",
+    };
+  },
+  methods: {
+    async loginPaciente() {
+      try {
+        // Faz login e obtém o token
+        const response = await axios.post("http://localhost:8080/auth/login", {
+          email: this.email,
+          senha: this.password,
+        });
+
+        const token = response.data.accessToken;
+        sessionStorage.setItem("authToken", token); // ✅ salva no sessionStorage
+
+        // Armazena o tipo de usuário (opcional, se o backend enviar)
+        if (response.data.role) {
+          sessionStorage.setItem("userRole", response.data.role);
+        }
+
+        // Valida se está autenticado
+        const perfilResponse = await axios.get("http://localhost:8080/usuarios/logado", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const usuario = perfilResponse.data;
+
+        // Salva nome e ID (se quiser usar no Navbar, por exemplo)
+        sessionStorage.setItem("userId", usuario.id);
+        sessionStorage.setItem("userNome", usuario.nome);
+
+        // Redireciona conforme o tipo de usuário
+        if (usuario.role === "PACIENTE") {
+          this.$router.push("/agendar");
+        } else if (usuario.role === "MEDICO") {
+          this.$router.push("/agenda");
+        } else {
+          this.$router.push("/");
+        }
+
+      } catch (error) {
+        alert("Erro de login. Verifique e-mail e senha.");
+        console.error("Login error:", error);
+      }
+    },
+    goToCadastro() {
+      this.$router.push("/cadastroPaciente");
+    },
+  },
+};
+</script>
 
 <style scoped>
 body {
@@ -277,36 +340,3 @@ body {
   }
 }
 </style>
-
-<script>
-import Navbar from "@/components/Navbar.vue";
-import Footer from "@/components/Footer.vue";
-
-export default {
-  name: "LoginPaciente",
-  components: { Navbar, Footer },
-  data() {
-    return {
-      email: "",
-      password: "",
-    };
-  },
-  methods: {
-    goToCadastro() {
-      this.$router.push("/cadastroPaciente");
-    },
-    loginWithGoogle() {
-      alert("Login com Google para Pacientes.");
-      this.$router.push("/home");
-    },
-    loginPaciente() {
-      if (this.email && this.password) {
-        alert("Paciente autenticado com sucesso.");
-        this.$router.push("/home");
-      } else {
-        alert("Email ou senha inválidos.");
-      }
-    }
-  }
-};
-</script>

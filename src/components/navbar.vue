@@ -24,28 +24,32 @@
 
         <div class="dropdown ms-3">
           <a href="#" class="d-flex align-items-center perfil-link" data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle"></i>
-            <span v-if="user">{{ user.nomeCompleto }}</span>
+            <i class="bi bi-person-circle me-2"></i>
+            <span v-if="user">{{ user.nomeCompleto || user.email }}</span>
           </a>
+
           <ul class="dropdown-menu dropdown-menu-end animate-dropdown">
             <li v-if="!user">
-              <router-link class="dropdown-item" to="/loginPaciente">Login</router-link>
+              <router-link class="dropdown-item" to="/login">Login</router-link>
             </li>
 
-            <li v-if="user && user.tipo === 'paciente'">
-              <router-link class="dropdown-item" to="/perfilPaciente">Meu Perfil</router-link>
-              <router-link class="dropdown-item" to="/consultasAgendadas">Minhas Consultas</router-link>
-            </li>
+            <template v-if="user?.papel === 'PACIENTE'">
+              <li><router-link class="dropdown-item" to="/perfilPaciente">Meu Perfil</router-link></li>
+              <li><router-link class="dropdown-item" to="/consultasAgendadas">Minhas Consultas</router-link></li>
+            </template>
 
-            <li v-if="user && user.tipo === 'medico'">
-              <router-link class="dropdown-item" to="/perfilMedico">Meu Perfil</router-link>
-              <router-link class="dropdown-item" to="/agendaMedica">Minha Agenda</router-link>
-            </li>
+            <template v-if="user?.papel === 'MEDICO'">
+              <li><router-link class="dropdown-item" to="/perfilMedico">Meu Perfil</router-link></li>
+              <li><router-link class="dropdown-item" to="/agendaMedica">Minha Agenda</router-link></li>
+            </template>
+
+            <template v-if="user?.papel === 'ADMIN'">
+              <li><router-link class="dropdown-item" to="/admin/dashboard">Painel Admin</router-link></li>
+              <li><router-link class="dropdown-item" to="/admin/usuarios">Gerenciar Usuários</router-link></li>
+            </template>
 
             <li v-if="user">
-              <router-link class="dropdown-item logout-btn" to="/" @click.prevent="logout">
-                Sair
-              </router-link>
+              <a class="dropdown-item logout-btn" href="#" @click.prevent="logout">Sair</a>
             </li>
           </ul>
         </div>
@@ -55,6 +59,7 @@
 </template>
 
 <script>
+import axios from "axios";
 
 export default {
   data() {
@@ -71,12 +76,40 @@ export default {
     toggleCollapse() {
       this.isCollapsed = !this.isCollapsed;
     },
+    async fetchUsuarioLogado() {
+      const token = sessionStorage.getItem("authToken");
+      if (!token) return;
+
+      try {
+        const response = await axios.get("http://localhost:8080/usuarios/logado", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        this.user = response.data;
+      } catch (error) {
+        console.error("Erro ao buscar usuário logado:", error);
+        sessionStorage.removeItem("authToken");
+        this.user = null;
+      }
+    },
+    logout() {
+      sessionStorage.removeItem("authToken");
+      this.user = null;
+      this.$router.push("/");
+      window.location.reload(); // atualiza a Navbar para refletir logout
+    },
   },
   mounted() {
-
+    this.fetchUsuarioLogado();
+    window.addEventListener("scroll", this.handleScroll);
+  },
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.handleScroll);
   },
 };
 </script>
+
 
 <style scoped>
 .navbar {

@@ -5,13 +5,13 @@
     </div>
 
     <div v-show="!loading">
-      <Navbar />
+      <Navbar :user="user" />
 
       <section class="banner" :style="{ backgroundImage: `url(${imagensBanner[imagemAtual]})` }">
         <div class="text-center">
           <h1>Cuide da sua Saúde com Profissionais de Confiança</h1>
           <p>Consultas rápidas e seguras ao alcance de um clique</p>
-          <router-link v-if="user && user.tipo === 'paciente'" to="/Agendamento" class="btn btn-success btn-lg">
+          <router-link v-if="user?.papel === 'PACIENTE'" to="/Agendamento" class="btn btn-success btn-lg">
             MARQUE SUA CONSULTA
           </router-link>
         </div>
@@ -235,54 +235,53 @@ import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import axios from "axios";
 
 export default {
+  components: { Navbar, Footer },
   data() {
     return {
       loading: true,
       user: null,
-      isPaciente: false,
-      isMedico: false,
       imagemAtual: 0,
       imagensBanner: [
         "/img/Fundo1.png",
-        "/img/Fundo2.jpg ",
+        "/img/Fundo2.jpg",
         "/img/Fundo3.jpg",
       ],
     };
   },
-  mounted() {
+  async mounted() {
     setTimeout(() => {
       this.loading = false;
       AOS.init();
     }, 1000);
 
-    // Simulação de verificação de usuário
-    this.verificarUsuario();
+    await this.buscarUsuarioLogado();
 
     setInterval(() => {
       this.imagemAtual = (this.imagemAtual + 1) % this.imagensBanner.length;
     }, 5000);
   },
   methods: {
-    verificarUsuario() {
-      // Simulação de verificação do tipo de usuário
-      const userType = "paciente"; // ou "medico"
-      if (userType === "paciente") {
-        this.user = { tipo: "paciente", nome: "João Silva" };
-        this.isPaciente = true;
-        this.isMedico = false;
-      } else if (userType === "medico") {
-        this.user = { tipo: "medico", nome: "Dr. Ana Oliveira" };
-        this.isMedico = true;
-        this.isPaciente = false;
+    async buscarUsuarioLogado() {
+      const token = sessionStorage.getItem("authToken");
+      if (!token) return;
+
+      try {
+        const response = await axios.get("http://localhost:8080/usuarios/logado", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        this.user = response.data;
+      } catch (error) {
+        console.error("Erro ao buscar usuário logado:", error);
+        sessionStorage.removeItem("authToken");
+        this.user = null;
       }
     }
-  },
-  components: {
-    Navbar,
-    Footer,
-  },
+  }
 };
 </script>
 
