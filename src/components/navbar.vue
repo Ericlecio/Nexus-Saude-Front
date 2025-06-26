@@ -1,5 +1,8 @@
 <template>
-  <nav class="navbar navbar-expand-lg fixed-top" :class="{ scrolled: isScrolled }">
+  <nav class="navbar navbar-expand-lg fixed-top" :class="{
+    scrolled: isScrolled,
+    admin: user?.papel === 'ADMIN'
+  }">
     <div class="container">
       <router-link class="navbar-brand" to="/">
         <img src="/src/assets/img/NexusSaude_horizontal.png" alt="Nexus Saúde" class="logo" />
@@ -14,12 +17,19 @@
           <li class="nav-item">
             <router-link class="nav-link" to="/">Home</router-link>
           </li>
-          <li class="nav-item">
-            <router-link class="nav-link" to="/sobre">Quem Somos</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link class="nav-link" to="/contato">Fale Conosco</router-link>
-          </li>
+
+          <template v-if="user?.papel === 'ADMIN'">
+            <li class="nav-item"><router-link class="nav-link" to="/dashboardAdmin">📊 Dashboard</router-link></li>
+            <li class="nav-item"><router-link class="nav-link" to="/doctors">🩺 Médicos</router-link></li>
+            <li class="nav-item"><router-link class="nav-link" to="/patients">🙍‍♂️ Pacientes</router-link></li>
+            <li class="nav-item"><router-link class="nav-link" to="/consultas">📁 Consultas</router-link></li>
+            <li class="nav-item"><router-link class="nav-link" to="/relatorios">📄 Relatórios</router-link></li>
+          </template>
+
+          <template v-else>
+            <li class="nav-item"><router-link class="nav-link" to="/sobre">Quem Somos</router-link></li>
+            <li class="nav-item"><router-link class="nav-link" to="/contato">Fale Conosco</router-link></li>
+          </template>
         </ul>
 
         <div class="dropdown ms-3">
@@ -44,8 +54,7 @@
             </template>
 
             <template v-if="user?.papel === 'ADMIN'">
-              <li><router-link class="dropdown-item" to="/admin/dashboard">Painel Admin</router-link></li>
-              <li><router-link class="dropdown-item" to="/admin/usuarios">Gerenciar Usuários</router-link></li>
+              <li><router-link class="dropdown-item" to="/dashboardAdmin">Painel Admin</router-link></li>
             </template>
 
             <li v-if="user">
@@ -97,7 +106,7 @@ export default {
       sessionStorage.removeItem("authToken");
       this.user = null;
       this.$router.push("/");
-      window.location.reload(); // atualiza a Navbar para refletir logout
+      window.location.reload();
     },
   },
   mounted() {
@@ -110,12 +119,24 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .navbar {
   background: transparent;
   transition: all 0.4s ease-in-out;
   padding: 15px 0;
+}
+
+.navbar.admin {
+  background-color: #03052b !important;
+}
+
+.navbar.admin .nav-link,
+.navbar.admin .perfil-link {
+  color: white !important;
+}
+
+.navbar.admin .nav-link:hover {
+  color: #53ba83 !important;
 }
 
 .navbar.scrolled {
@@ -125,8 +146,21 @@ export default {
 }
 
 @media (max-width: 991px) {
-  .navbar {
+
+  .navbar,
+  .navbar.admin {
     background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .navbar.admin {
+    background: #03052b !important;
+  }
+
+  .collapse.navbar-collapse {
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   }
 }
@@ -224,14 +258,5 @@ export default {
 
 .navbar-toggler:hover .navbar-toggler-icon {
   transform: rotate(90deg);
-}
-
-@media (max-width: 991px) {
-  .collapse.navbar-collapse {
-    background: white;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  }
 }
 </style>

@@ -8,7 +8,7 @@
           <h1>Nexus Saúde</h1>
         </div>
 
-        <form @submit.prevent="loginPaciente">
+        <form @submit.prevent="login">
           <div class="input-group">
             <i class="fas fa-user"></i>
             <input type="email" v-model="email" placeholder="E-mail" class="input-field" required />
@@ -59,23 +59,20 @@ export default {
     };
   },
   methods: {
-    async loginPaciente() {
+    async login() {
       try {
-        // Faz login e obtém o token
         const response = await axios.post("http://localhost:8080/auth/login", {
           email: this.email,
           senha: this.password,
         });
 
         const token = response.data.accessToken;
-        sessionStorage.setItem("authToken", token); // ✅ salva no sessionStorage
+        sessionStorage.setItem("authToken", token);
 
-        // Armazena o tipo de usuário (opcional, se o backend enviar)
         if (response.data.role) {
           sessionStorage.setItem("userRole", response.data.role);
         }
 
-        // Valida se está autenticado
         const perfilResponse = await axios.get("http://localhost:8080/usuarios/logado", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -83,16 +80,16 @@ export default {
         });
 
         const usuario = perfilResponse.data;
-
-        // Salva nome e ID (se quiser usar no Navbar, por exemplo)
         sessionStorage.setItem("userId", usuario.id);
         sessionStorage.setItem("userNome", usuario.nome);
 
-        // Redireciona conforme o tipo de usuário
+        // Redirecionamento por papel
         if (usuario.role === "PACIENTE") {
           this.$router.push("/agendar");
         } else if (usuario.role === "MEDICO") {
           this.$router.push("/agenda");
+        } else if (usuario.role === "ADMIN") {
+          this.$router.push("/dashboardAdmin");
         } else {
           this.$router.push("/");
         }
@@ -106,8 +103,17 @@ export default {
       this.$router.push("/cadastroPaciente");
     },
   },
+  mounted() {
+    if (this.$route.query.email) {
+      this.email = this.$route.query.email;
+    }
+    if (this.$route.query.senha) {
+      this.password = this.$route.query.senha;
+    }
+  }
 };
 </script>
+
 
 <style scoped>
 body {

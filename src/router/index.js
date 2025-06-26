@@ -11,8 +11,8 @@ import AgendaMedica from "@/views/AgendaMedica.vue";
 import DashboardAdmin from "../views/Admin/DashboardAdmin.vue";
 import CadastroPaciente from "@/views/CadastroPaciente.vue";
 import MedicoAdmin from "@/views/Admin/MedicoAdmin.vue";
-import EdicaoMedicoView from "@/views/EdicaoMedicoView.vue";
 import LoginView from "../views/LoginView.vue";
+import PacienteAdmin from "@/views/Admin/PacienteAdmin.vue";
 
 const routes = [
   {
@@ -39,12 +39,6 @@ const routes = [
     path: "/dashboardAdmin",
     name: "DashboardAdmin",
     component: DashboardAdmin,
-  },
-  {
-    path: "/medico/editar/:id",
-    name: "editDoctor",
-    component: EdicaoMedicoView,
-    props: true,
   },
   {
     path: "/contato",
@@ -90,6 +84,11 @@ const routes = [
     name: "medicoAdmin",
     component: MedicoAdmin,
   },
+  {
+    path: "/pacienteAdmin",
+    name: "pacienteAdmin",
+    component: PacienteAdmin,
+  },
 ];
 
 const router = createRouter({
@@ -97,7 +96,6 @@ const router = createRouter({
   routes,
 });
 
-// ✅ Proteção de rotas (roteamento condicional com token JWT)
 router.beforeEach((to, from, next) => {
   const token = sessionStorage.getItem("authToken");
   const publicPaths = ["/", "/login", "/cadastroPaciente", "/cadastroMedico"];

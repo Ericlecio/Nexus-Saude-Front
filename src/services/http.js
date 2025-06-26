@@ -1,4 +1,3 @@
-// src/services/http.js
 import axios from "axios";
 
 // Função que adiciona o token de autenticação em todas as requisições
@@ -12,7 +11,6 @@ const attachToken = (api) => {
   });
 };
 
-// APIs organizadas por responsabilidade
 const medicoApi = axios.create({
   baseURL: "http://localhost:8080/medico",
   headers: { "Content-Type": "application/json" },
@@ -38,12 +36,10 @@ const adminApi = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Anexar token em todas as APIs protegidas
 attachToken(medicoApi);
 attachToken(pacienteApi);
 attachToken(diasAtendimentoApi);
 attachToken(AgendamentoApi);
 attachToken(adminApi);
 
-// Exportar para uso nos componentes Vue
 export { medicoApi, pacienteApi, diasAtendimentoApi, AgendamentoApi, adminApi };

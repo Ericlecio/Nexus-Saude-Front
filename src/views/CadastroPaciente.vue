@@ -118,7 +118,6 @@ export default {
             this.form.telefone = handlePhoneInput(e.target.value);
         },
         async submitForm() {
-            // Validações antes de enviar os dados
             if (this.planoSelecionado !== "Outro") {
                 this.form.planoSaude = this.planoSelecionado;
             }
@@ -134,21 +133,21 @@ export default {
             }
 
             try {
-                // Enviar a requisição para o backend com os dados do formulário
                 const response = await pacienteApi.post("/registrar", {
                     ...this.form,
-                    dataCadastro: new Date().toISOString()  // Garantindo que a data seja enviada corretamente
+                    dataCadastro: new Date().toISOString()
                 });
 
-                const token = sessionStorage.getItem("authToken");
-                if (token) {
-                    alert("Paciente cadastrado com sucesso pelo ADMIN!");
-                } else {
-                    alert("Cadastro realizado! Faça login para acessar sua conta.");
-                }
+                alert("Cadastro realizado! Faça login para acessar sua conta.");
 
-                console.log(response.data);
-                this.resetForm();  // Limpa o formulário após o cadastro
+                this.$router.push({
+                    path: "/login",
+                    query: {
+                        email: this.form.email,
+                        senha: this.form.senha,
+                    },
+                });
+
             } catch (error) {
                 console.error("Erro ao cadastrar paciente:", error);
                 alert("Erro ao cadastrar paciente.");

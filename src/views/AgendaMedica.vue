@@ -238,8 +238,8 @@ export default {
                 Agendado: 1,
                 Cancelado: 2,
                 Finalizado: 3,
-                Presente: 4, // ajuste conforme sua base
-                Ausente: 5,  // ajuste conforme sua base
+                Presente: 4,
+                Ausente: 5,
             };
             return map[descricao] || 1;
         },

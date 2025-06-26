@@ -1,11 +1,9 @@
 <template>
+    <Navbar />
     <div class="dashboard">
-        <Sidebar />
         <div class="content">
-            <!-- PAINEL PRINCIPAL -->
             <template v-if="telaAtual === 'dashboard'">
                 <h1 class="title">Painel Administrativo</h1>
-
                 <div class="dashboard-stats">
                     <div class="stat-card">
                         <h3>Médicos Cadastrados</h3>
@@ -15,17 +13,17 @@
                     <div class="stat-card">
                         <h3>Pacientes Cadastrados</h3>
                         <p>{{ patientsCount }}</p>
-                        <router-link to="/patients">Ver Pacientes</router-link>
+                        <button @click="telaAtual = 'pacientes'">Ver Pacientes</button>
                     </div>
                     <div class="stat-card">
                         <h3>Agendamentos Ativos</h3>
                         <p>{{ agendamentosAtivos }}</p>
-                        <router-link to="/agendamentos">Ver Agendamentos</router-link>
+                        <button @click="telaAtual = 'agendamentos'">Ver Agendamentos</button>
                     </div>
                     <div class="stat-card">
                         <h3>Consultas Realizadas</h3>
                         <p>{{ consultasRealizadas }}</p>
-                        <router-link to="/consultas">Ver Consultas</router-link>
+                        <button @click="telaAtual = 'consultas'">Ver Consultas</button>
                     </div>
                 </div>
 
@@ -38,95 +36,34 @@
                 </div>
             </template>
 
-            <!-- LISTA DE MÉDICOS -->
             <template v-else-if="telaAtual === 'medicos'">
                 <button class="btn-voltar" @click="telaAtual = 'dashboard'">← Voltar</button>
-                <h2>Lista de Médicos</h2>
-                <div class="top-bar">
-                    <button @click="irParaCadastro">Adicionar Médico</button>
-                    <input type="text" v-model="searchTerm" placeholder="Buscar por nome, CPF ou CRM..."
-                        class="search-input" />
-                </div>
-
-                <div v-if="doctors.length === 0" class="no-doctors">
-                    <p>Não há médicos cadastrados.</p>
-                </div>
-
-                <table v-else>
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Especialidade</th>
-                            <th>Email</th>
-                            <th>CRM</th>
-                            <th>Telefone</th>
-                            <th>UF</th>
-                            <th>Valor</th>
-                            <th>Dias de Atendimento</th>
-                            <th>CPF</th>
-                            <th>Sexo</th>
-                            <th>Tempo Consulta</th>
-                            <th>Data Nasc.</th>
-                            <th>Cadastrado</th>
-                            <th>Criado em</th>
-                            <th>Atualizado em</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="doctor in filteredDoctors" :key="doctor.id">
-                            <td>{{ doctor.nome }}</td>
-                            <td>{{ doctor.especialidade }}</td>
-                            <td>{{ doctor.email }}</td>
-                            <td>{{ doctor.crm }}</td>
-                            <td>{{ doctor.telefoneConsultorio }}</td>
-                            <td>{{ doctor.uf }}</td>
-                            <td>R$ {{ doctor.valorConsulta?.toFixed(2).replace('.', ',') }}</td>
-                            <td>
-                                <ul>
-                                    <li v-for="dia in doctor.diasAtendimento" :key="dia.id">
-                                        {{ dia.diaSemana }} - {{ dia.horario }}
-                                    </li>
-                                </ul>
-                            </td>
-                            <td>{{ doctor.cpf || '-' }}</td>
-                            <td>{{ doctor.sexo || '-' }}</td>
-                            <td>{{ doctor.tempoConsulta ? doctor.tempoConsulta + ' min' : '-' }}</td>
-                            <td>{{ formatarData(doctor.dataNascimento) }}</td>
-                            <td>{{ formatarDataHora(doctor.dataCadastro) }}</td>
-                            <td>{{ formatarDataHora(doctor.createdAt) }}</td>
-                            <td>{{ formatarDataHora(doctor.updatedAt) }}</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="edit" @click="editarMedico(doctor)">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                    <button class="delete" @click="excluirMedico(doctor.id)">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <MedicoAdmin />
             </template>
 
-            <!-- CADASTRO DE MÉDICO -->
             <template v-else-if="telaAtual === 'cadastroMedico'">
                 <button class="btn-voltar" @click="telaAtual = 'medicos'">← Voltar</button>
                 <CadastroMedico @cadastro-finalizado="telaAtual = 'medicos'" />
             </template>
+
+            <template v-else>
+                <h2>Em breve: {{ telaAtual }}</h2>
+                <button class="btn-voltar" @click="telaAtual = 'dashboard'">← Voltar</button>
+            </template>
         </div>
     </div>
+    <Footer />
 </template>
 
 <script>
-import Sidebar from '/src/views/Admin/Sidebar.vue';
 import CadastroMedico from '/src/views/CadastroMedicoView.vue';
+import MedicoAdmin from '/src/views/Admin/MedicoAdmin.vue';
 import { medicoApi } from '@/services/http';
+import Navbar from "@/components/Navbar.vue";
+import Footer from "@/components/Footer.vue";
 
 export default {
-    components: { Sidebar, CadastroMedico },
+    components: { CadastroMedico, Navbar, Footer, MedicoAdmin },
     data() {
         return {
             telaAtual: 'dashboard',
@@ -137,16 +74,6 @@ export default {
             agendamentosAtivos: 0,
             consultasRealizadas: 0
         };
-    },
-    computed: {
-        filteredDoctors() {
-            const term = this.searchTerm.toLowerCase();
-            return this.doctors.filter(doc =>
-                doc.nome?.toLowerCase().includes(term) ||
-                doc.cpf?.includes(term) ||
-                doc.crm?.toLowerCase().includes(term)
-            );
-        }
     },
     async mounted() {
         await this.fetchStats();
@@ -172,47 +99,27 @@ export default {
             } catch (error) {
                 console.error('Erro ao buscar médicos:', error);
             }
-        },
-        irParaCadastro() {
-            this.telaAtual = 'cadastroMedico';
-        },
-        editarMedico(doctor) {
-            this.$router.push({ name: 'editDoctor', params: { id: doctor.id } });
-        },
-        async excluirMedico(id) {
-            if (confirm('Deseja realmente excluir?')) {
-                try {
-                    await medicoApi.delete(`/deletar/${id}`);
-                    this.fetchDoctors();
-                } catch (error) {
-                    console.error('Erro ao excluir médico:', error);
-                }
-            }
-        },
-        formatarData(data) {
-            if (!data) return '-';
-            return new Date(data).toLocaleDateString('pt-BR');
-        },
-        formatarDataHora(dataHora) {
-            if (!dataHora) return '-';
-            return new Date(dataHora).toLocaleString('pt-BR');
         }
     }
 };
 </script>
 
-
 <style scoped>
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+
 .dashboard {
-    display: flex;
     background-color: #f5f6fa;
     min-height: 100vh;
+    padding-top: 80px;
+    display: flex;
+    justify-content: center;
 }
 
 .content {
-    flex: 1;
-    padding: 40px;
-    margin-left: 240px;
+    width: 100%;
+    max-width: 100%;
+    padding: 40px 20px;
+    background-color: #f5f6fa;
 }
 
 .title {
@@ -220,12 +127,14 @@ export default {
     font-weight: bold;
     color: #03052b;
     margin-bottom: 30px;
+    text-align: center;
 }
 
 .dashboard-stats {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
+    justify-content: center;
     margin-bottom: 40px;
 }
 
@@ -236,7 +145,12 @@ export default {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     flex: 1;
     min-width: 250px;
+    max-width: 280px;
     transition: transform 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .stat-card:hover {
@@ -255,17 +169,19 @@ export default {
     color: #53ba83;
 }
 
-.stat-card a {
+.stat-card button {
     margin-top: 10px;
-    display: inline-block;
-    color: #007BFF;
-    font-weight: 500;
-    text-decoration: none;
+    background: none;
+    border: 1px solid #000;
+    padding: 6px 12px;
     cursor: pointer;
+    font-weight: 500;
+    border-radius: 6px;
 }
 
-.stat-card a:hover {
-    text-decoration: underline;
+button i,
+.fa {
+    color: #53ba83;
 }
 
 .relatorio-section {
@@ -273,6 +189,8 @@ export default {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-top: 30px;
+    text-align: center;
 }
 
 .relatorio-section h2 {
