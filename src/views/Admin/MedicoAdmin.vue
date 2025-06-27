@@ -391,7 +391,7 @@ export default {
                 };
 
                 const isEdicao = this.modalEditarVisivel && this.medicoSelecionado;
-                const url = isEdicao ? `/atualizar/${this.medicoSelecionado.id}` : '/admin-criar';
+                const url = isEdicao ? `/update/${this.medicoSelecionado.id}` : '/admin-criar';
                 const method = isEdicao ? 'put' : 'post';
                 await medicoApi[method](url, payload);
                 alert("Médico salvo com sucesso!");

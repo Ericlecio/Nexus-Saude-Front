@@ -81,7 +81,6 @@
                         <input v-model="form.telefone" placeholder="Telefone" @input="handlePhoneInput"
                             class="form-control" required />
                         <input v-model="form.email" type="email" placeholder="Email" required />
-
                         <input v-model="form.dataNascimento" type="date" class="form-control" required />
 
                         <select v-model="form.planoSaude" class="form-select">
