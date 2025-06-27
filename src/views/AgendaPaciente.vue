@@ -96,7 +96,7 @@ import BotaoVoltar from "@/components/BotaoVoltar.vue";
 import BotaoMarque from "@/components/botaoMarque.vue";
 
 export default {
-  name: "MinhasConsultas",
+  name: "AgendaPaciente",
   components: {
     Navbar,
     Footer,
@@ -137,33 +137,38 @@ export default {
     },
   },
   methods: {
-    carregarAgendamentos() {
-      // Simulação de carregamento de dados sem Firebase.
-      // Substitua por sua lógica de obtenção de dados, por exemplo, de uma API.
-      this.agendamentos = [
-        // Exemplo de dados de agendamentos
-        {
-          id: 1,
-          especialidade: "Dermatologia",
-          medicoNome: "Dr. João Silva",
-          local: "Clínica X",
-          data: "2025-05-10 10:00",
-          telefoneConsultorio: "(11) 1234-5678",
-          valorConsulta: "R$ 150,00",
-          situacao: "Confirmada",
-        },
-        {
-          id: 2,
-          especialidade: "Cardiologia",
-          medicoNome: "Dr. Ana Oliveira",
-          local: "Clínica Y",
-          data: "2025-05-12 14:00",
-          telefoneConsultorio: "(11) 2345-6789",
-          valorConsulta: "R$ 200,00",
-          situacao: "Cancelada pelo paciente",
-        },
-      ];
-      this.carregando = false;
+    async carregarAgendamentos() {
+      try {
+        this.carregando = true;
+        const token = sessionStorage.getItem('authToken');
+        if (!token) {
+          console.error("Token de autenticação não encontrado.");
+          alert("Token de autenticação não encontrado.");
+          return;
+        }
+
+        const response = await fetch("/agendamento/listarPaciente", {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const textResponse = await response.text();  // Recebe a resposta como texto
+        console.log("Resposta do servidor:", textResponse);  // Verifique o conteúdo da resposta
+
+        if (response.ok) {
+          const data = JSON.parse(textResponse);  // Tenta converter o texto para JSON
+          this.agendamentos = data;
+        } else {
+          console.error("Erro ao carregar agendamentos:", textResponse);
+          alert("Erro ao carregar os agendamentos.");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar agendamentos:", error);
+        alert("Erro ao carregar os agendamentos.");
+      } finally {
+        this.carregando = false;
+      }
     },
 
     confirmarCancelamento(id) {
@@ -201,8 +206,8 @@ export default {
     },
   },
   mounted() {
-    this.carregarAgendamentos();
-  },
+    this.carregarAgendamentos();  // Chama o método para carregar os agendamentos assim que o componente é montado
+  }
 };
 </script>
 

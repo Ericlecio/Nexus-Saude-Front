@@ -2,73 +2,59 @@
     <Navbar />
     <div class="dashboard">
         <div class="content">
-            <template v-if="telaAtual === 'dashboard'">
-                <h1 class="title">Painel Administrativo</h1>
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <h3>Médicos Cadastrados</h3>
-                        <p>{{ doctorsCount }}</p>
-                        <button @click="telaAtual = 'medicos'">Ver Médicos</button>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pacientes Cadastrados</h3>
-                        <p>{{ patientsCount }}</p>
-                        <button @click="telaAtual = 'pacientes'">Ver Pacientes</button>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Agendamentos Ativos</h3>
-                        <p>{{ agendamentosAtivos }}</p>
-                        <button @click="telaAtual = 'agendamentos'">Ver Agendamentos</button>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Consultas Realizadas</h3>
-                        <p>{{ consultasRealizadas }}</p>
-                        <button @click="telaAtual = 'consultas'">Ver Consultas</button>
-                    </div>
+            <h1 class="title">Painel Administrativo</h1>
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>Médicos Cadastrados</h3>
+                    <p>{{ doctorsCount }}</p>
+                    <router-link to="/medicoAdmin">
+                        <button>Ver Médicos</button>
+                    </router-link>
                 </div>
-
-                <div class="relatorio-section">
-                    <h2>Relatórios</h2>
-                    <p>Baixe os relatórios completos de agendamentos e histórico de consultas.</p>
-                    <button class="btn-relatorio">
-                        📥 Baixar Relatório de Consultas
-                    </button>
+                <div class="stat-card">
+                    <h3>Pacientes Cadastrados</h3>
+                    <p>{{ patientsCount }}</p>
+                    <router-link to="/pacienteAdmin">
+                        <button>Ver Pacientes</button>
+                    </router-link>
                 </div>
-            </template>
+                <div class="stat-card">
+                    <h3>Agendamentos Ativos</h3>
+                    <p>{{ agendamentosAtivos }}</p>
+                    <router-link to="/agendamentos">
+                        <button>Ver Agendamentos</button>
+                    </router-link>
+                </div>
+                <div class="stat-card">
+                    <h3>Consultas Realizadas</h3>
+                    <p>{{ consultasRealizadas }}</p>
+                    <router-link to="/consultas">
+                        <button>Ver Consultas</button>
+                    </router-link>
+                </div>
+            </div>
 
-            <template v-else-if="telaAtual === 'medicos'">
-                <button class="btn-voltar" @click="telaAtual = 'dashboard'">← Voltar</button>
-                <MedicoAdmin />
-            </template>
-
-            <template v-else-if="telaAtual === 'cadastroMedico'">
-                <button class="btn-voltar" @click="telaAtual = 'medicos'">← Voltar</button>
-                <CadastroMedico @cadastro-finalizado="telaAtual = 'medicos'" />
-            </template>
-
-            <template v-else>
-                <h2>Em breve: {{ telaAtual }}</h2>
-                <button class="btn-voltar" @click="telaAtual = 'dashboard'">← Voltar</button>
-            </template>
+            <div class="relatorio-section">
+                <h2>Relatórios</h2>
+                <p>Baixe os relatórios completos de agendamentos e histórico de consultas.</p>
+                <button class="btn-relatorio">
+                    📥 Baixar Relatório de Consultas
+                </button>
+            </div>
         </div>
     </div>
     <Footer />
 </template>
 
 <script>
-import CadastroMedico from '/src/views/CadastroMedicoView.vue';
-import MedicoAdmin from '/src/views/Admin/MedicoAdmin.vue';
 import { medicoApi } from '@/services/http';
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
 
 export default {
-    components: { CadastroMedico, Navbar, Footer, MedicoAdmin },
+    components: { Navbar, Footer },
     data() {
         return {
-            telaAtual: 'dashboard',
-            doctors: [],
-            searchTerm: "",
             doctorsCount: 0,
             patientsCount: 0,
             agendamentosAtivos: 0,
@@ -77,7 +63,6 @@ export default {
     },
     async mounted() {
         await this.fetchStats();
-        this.fetchDoctors();
     },
     methods: {
         async fetchStats() {
@@ -91,18 +76,11 @@ export default {
             } catch (error) {
                 console.error("Erro ao buscar estatísticas", error);
             }
-        },
-        async fetchDoctors() {
-            try {
-                const response = await medicoApi.get('/listar');
-                this.doctors = response.data;
-            } catch (error) {
-                console.error('Erro ao buscar médicos:', error);
-            }
         }
     }
 };
 </script>
+
 
 <style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');

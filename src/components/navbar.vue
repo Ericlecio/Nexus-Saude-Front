@@ -45,7 +45,7 @@
 
             <template v-if="user?.papel === 'PACIENTE'">
               <li><router-link class="dropdown-item" to="/perfilPaciente">Meu Perfil</router-link></li>
-              <li><router-link class="dropdown-item" to="/consultasAgendadas">Minhas Consultas</router-link></li>
+              <li><router-link class="dropdown-item" to="/agendaPaciente">Minhas Agenda</router-link></li>
             </template>
 
             <template v-if="user?.papel === 'MEDICO'">
