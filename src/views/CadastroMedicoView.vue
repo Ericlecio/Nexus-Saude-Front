@@ -270,7 +270,6 @@ export default {
             diasAtendimento.push({
               diaSemana: dia,
               horario: horario,
-             
             });
           }
         }
@@ -306,6 +305,16 @@ export default {
         }
 
         console.log(response.data);
+
+        // Redirecionar para a página de login com email e senha
+        this.$router.push({
+          path: '/login',
+          query: {
+            email: this.form.email,
+            senha: this.form.senha,
+          }
+        });
+
       } catch (error) {
         console.error("Erro ao cadastrar médico:", error);
         if (error.response && error.response.status === 403) {
