@@ -32,12 +32,15 @@
         </form>
 
         <div class="options">
-          <a href="#" class="create-account" @click.prevent="goToCadastro">Criar Conta</a>
+          <a href="#" class="create-account" @click.prevent="goToCadastroPaciente">Criar Conta Paciente</a>
         </div>
       </div>
 
       <div class="logo-container">
         <img src="@/assets/img/NexusSaude_vertical.png" alt="Logo Nexus Saúde" class="logo" />
+        <div class="create-medico-container">
+          <a href="#" class="create-account" @click.prevent="goToCadastroMedico">Criar Conta Médico</a>
+        </div>
       </div>
     </div>
   </div>
@@ -99,8 +102,11 @@ export default {
         console.error("Login error:", error);
       }
     },
-    goToCadastro() {
+    goToCadastroPaciente() {
       this.$router.push("/cadastroPaciente");
+    },
+    goToCadastroMedico() {
+      this.$router.push("/cadastroMedico");
     },
   },
   mounted() {
@@ -259,7 +265,7 @@ body {
 }
 
 .create-account {
-  color: white;
+  color: #53ba83;
   font-weight: bold;
   font-size: 1.1rem;
   text-decoration: none;
@@ -284,6 +290,14 @@ body {
   max-width: 85%;
   height: auto;
   margin-bottom: 40px;
+}
+
+/* Adicionando estilo para o botão Criar Conta Médico ao lado da logo */
+.create-medico-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 20px;
 }
 
 .btn-google {

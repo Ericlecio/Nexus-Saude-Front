@@ -1,4 +1,5 @@
 <template>
+    <Navbar />
     <div class="container">
         <h2>Lista de Médicos</h2>
         <div class="top-bar">
@@ -178,13 +179,15 @@
                 </form>
             </div>
         </div>
-
     </div>
+    <Footer />
 </template>
 
 
 <script>
 import { medicoApi } from '@/services/http';
+import Navbar from "@/components/Navbar.vue";
+import Footer from "@/components/Footer.vue";
 import {
     validarNome,
     validarCPF,
@@ -197,6 +200,7 @@ import {
 } from '@/components/validators';
 
 export default {
+    components: { Navbar, Footer },
     name: 'MedicoAdmin',
     data() {
         return {
