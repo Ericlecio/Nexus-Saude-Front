@@ -75,6 +75,13 @@
             </h5>
 
             <div class="row g-3">
+              <!-- Adicione este campo para senha atual -->
+              <div class="col-md-12" v-if="!isAdmin">
+                <label class="form-label">Senha Atual</label>
+                <input type="password" v-model="senhaAtual" class="form-control" placeholder="Digite sua senha atual"
+                  required>
+              </div>
+
               <div class="col-md-6">
                 <label class="form-label">Nova Senha</label>
                 <input type="password" v-model="novaSenha" class="form-control" placeholder="Mínimo 6 caracteres">
@@ -355,6 +362,18 @@ export default {
   },
   async mounted() {
     await this.carregarPerfilDoUsuarioLogado();
+
+    // Verificar se é admin
+    try {
+      const userResponse = await axios.get("http://localhost:8080/usuarios/logado", {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+        },
+      });
+      this.isAdmin = userResponse.data.roles.includes('ROLE_ADMIN');
+    } catch (error) {
+      console.error("Erro ao verificar permissões:", error);
+    }
   },
   methods: {
     gerarHorarios(inicio, fim) {
@@ -535,24 +554,50 @@ export default {
         return;
       }
 
+      // Validação para médicos não-admins
+      if (!this.isAdmin && (!this.senhaAtual || this.senhaAtual.length < 6)) {
+        alert("Por favor, digite sua senha atual para confirmar a alteração");
+        return;
+      }
+
       this.loadingSenha = true;
 
       try {
-        const response = await medicoApi.put(`/redefinir-senha/${this.medico.id}`, {
-          novaSenha: this.novaSenha
-        }, {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
+        const payload = {
+          novaSenha: this.novaSenha,
+          senhaAntiga: this.isAdmin ? "" : this.senhaAtual
+        };
+
+        const response = await medicoApi.put(
+          `/redefinir-senha/${this.medico.id}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
+            }
           }
-        });
-        alert(response.data);
+        );
+
+        alert(response.data || "Senha atualizada com sucesso!");
         this.novaSenha = "";
         this.confirmarSenha = "";
-        this.loadingSenha = false;
+        this.senhaAtual = "";
+
+        // Opcional: forçar logout após mudança de senha
+        sessionStorage.removeItem("authToken");
+        this.$router.push("/login");
       } catch (error) {
         console.error("Erro ao redefinir senha:", error);
+
+        if (error.response?.status === 403) {
+          alert("Acesso não autorizado. Verifique sua senha atual e tente novamente.");
+        } else if (error.response?.status === 400) {
+          alert(error.response.data || "Dados inválidos fornecidos.");
+        } else {
+          alert("Erro ao redefinir senha. Tente novamente mais tarde.");
+        }
+      } finally {
         this.loadingSenha = false;
-        alert("Erro ao redefinir senha.");
       }
     },
     formatarCPF() {
