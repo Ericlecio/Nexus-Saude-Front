@@ -336,10 +336,11 @@ export default {
         sexta: { inicio: '', fim: '' },
         sabado: { inicio: '', fim: '' }
       },
-      horarios: this.gerarHorarios(8, 18),
+      horarios: [],
       formEdit: {},
       novaSenha: "",
       confirmarSenha: "",
+      senhaAtual: "",
       emailUsuario: "",
       loadingSenha: false,
       loadingEdicao: false,
@@ -357,10 +358,14 @@ export default {
       ufs: [
         'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
         'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
-      ]
+      ],
+      isAdmin: false
     };
   },
   async mounted() {
+    // Horários padrão (7h às 20h de 15 em 15min)
+    this.horarios = this.gerarHorarios("07:00", "20:00", 15);
+
     await this.carregarPerfilDoUsuarioLogado();
 
     // Verificar se é admin
@@ -376,14 +381,20 @@ export default {
     }
   },
   methods: {
-    gerarHorarios(inicio, fim) {
+    gerarHorarios(inicio, fim, passoMinutos) {
+      // Exemplo: gerarHorarios("07:00", "20:00", 15)
       const horarios = [];
-      for (let hora = inicio; hora <= fim; hora++) {
-        for (let minuto = 0; minuto < 60; minuto += 15) {
-          const horaStr = hora.toString().padStart(2, '0');
-          const minutoStr = minuto.toString().padStart(2, '0');
-          horarios.push(`${horaStr}:${minutoStr}`);
-        }
+      const [hIni, mIni] = inicio.split(":").map(Number);
+      const [hFim, mFim] = fim.split(":").map(Number);
+
+      let start = new Date(0, 0, 0, hIni, mIni, 0);
+      let end = new Date(0, 0, 0, hFim, mFim, 0);
+
+      while (start <= end) {
+        const h = start.getHours().toString().padStart(2, "0");
+        const m = start.getMinutes().toString().padStart(2, "0");
+        horarios.push(`${h}:${m}`);
+        start = new Date(start.getTime() + passoMinutos * 60000);
       }
       return horarios;
     },
@@ -420,14 +431,16 @@ export default {
           }
         });
         this.diasAtendimento = response.data || [];
-
         // Inicializar diasAtendimentoEdit e diasAtendimentoEditPerfil
         this.diasSemana.forEach(dia => {
-          const atendimento = this.diasAtendimento.find(d => d.diaSemana === dia.value);
-          if (atendimento) {
+          // Busca todos horários cadastrados daquele dia
+          const atendimentosDia = this.diasAtendimento.filter(d => d.diaSemana === dia.value);
+          if (atendimentosDia && atendimentosDia.length > 0) {
+            // pega o menor como início, maior como fim
+            const horarios = atendimentosDia.map(a => a.horario || a.horarioInicio).sort();
             this.diasAtendimentoEdit[dia.value] = {
-              inicio: atendimento.horarioInicio || '',
-              fim: atendimento.horarioFim || ''
+              inicio: horarios[0] || '',
+              fim: horarios[horarios.length - 1] || ''
             };
             this.diasAtendimentoEditPerfil[dia.value] = { ...this.diasAtendimentoEdit[dia.value] };
           } else {
@@ -454,18 +467,10 @@ export default {
       };
       this.showModalEdit = true;
     },
-    abrirModalDias() {
-      this.showModalDias = true;
-    },
-    fecharModal() {
-      this.showModalEdit = false;
-    },
-    fecharModalDias() {
-      this.showModalDias = false;
-    },
-    fecharModalDelete() {
-      this.showModalDelete = false;
-    },
+    fecharModal() { this.showModalEdit = false; },
+    abrirModalDias() { this.showModalDias = true; },
+    fecharModalDias() { this.showModalDias = false; },
+    fecharModalDelete() { this.showModalDelete = false; },
     async salvarEdicao() {
       this.loadingEdicao = true;
       try {
@@ -495,10 +500,13 @@ export default {
       this.diasSemana.forEach(dia => {
         const horariosDia = this.diasAtendimentoEdit[dia.value];
         if (horariosDia.inicio && horariosDia.fim) {
-          lista.push({
-            diaSemana: dia.value,
-            horarioInicio: horariosDia.inicio,
-            horarioFim: horariosDia.fim
+          // Gera todos horários entre inicio e fim, de 15 em 15 min
+          const horariosGerados = this.gerarHorarios(horariosDia.inicio, horariosDia.fim, 15);
+          horariosGerados.forEach(horario => {
+            lista.push({
+              diaSemana: dia.value,
+              horario: horario
+            });
           });
         }
       });
@@ -668,6 +676,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 .container {
