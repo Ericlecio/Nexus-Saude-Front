@@ -14,6 +14,7 @@
                 <option value="sexta">Sexta</option>
                 <option value="sabado">Sábado</option>
             </select>
+
         </div>
 
         <table>
@@ -41,8 +42,8 @@
                     <td>R$ {{ doctor.valorConsulta?.toFixed(2).replace('.', ',') }}</td>
                     <td>
                         <ul>
-                            <li v-for="dia in agruparDiasAtendimento(doctor.diasAtendimento)" :key="dia.diaSemana">
-                                {{ dia.diaSemana }}: {{ dia.horarioInicio }} - {{ dia.horarioFim }}
+                            <li v-for="dia in doctor.diasAtendimento" :key="dia.id">
+                                {{ dia.diaSemana }} - {{ dia.horario }}
                             </li>
                         </ul>
                     </td>
@@ -178,9 +179,11 @@
                 </form>
             </div>
         </div>
+
     </div>
     <Footer />
 </template>
+
 
 <script>
 import { medicoApi } from '@/services/http';
@@ -251,20 +254,6 @@ export default {
         }
     },
     methods: {
-        agruparDiasAtendimento(dias) {
-            const agrupados = {};
-            dias.forEach(dia => {
-                if (!agrupados[dia.diaSemana]) {
-                    agrupados[dia.diaSemana] = {
-                        diaSemana: dia.diaSemana,
-                        horarioInicio: dia.horarioInicio,
-                        horarioFim: dia.horarioFim
-                    };
-                }
-            });
-            return Object.values(agrupados);
-        },
-
         async fetchDoctors() {
             try {
                 const res = await medicoApi.get('/listar');
@@ -273,27 +262,19 @@ export default {
                 console.error('Erro ao buscar médicos:', err);
             }
         },
-
         abrirModalAdicionar() {
             this.resetarFormulario();
             this.modalAdicionarVisivel = true;
         },
-
         abrirModalEditar(medico) {
             this.resetarFormulario();
-            this.medicoSelecionado = medico;
 
-            // Copiar dados do médico para o formulário
-            Object.keys(this.form).forEach(key => {
-                if (key in medico) {
-                    this.form[key] = medico[key];
-                }
-            });
+            const medicoEditado = { ...medico };
+            medicoEditado.valorConsulta = `R$ ${medico.valorConsulta.toFixed(2).replace('.', ',')}`;
 
-            // Formatar valor da consulta
-            this.form.valorConsulta = `R$ ${medico.valorConsulta.toFixed(2).replace('.', ',')}`;
+            Object.assign(this.form, medicoEditado);
 
-            // Preencher dias de atendimento
+            // (mantém o restante do seu código)
             this.diasAtendimento = {
                 segunda: { inicio: "", fim: "" },
                 terca: { inicio: "", fim: "" },
@@ -303,26 +284,30 @@ export default {
                 sabado: { inicio: "", fim: "" }
             };
 
-            // Preencher com os valores existentes
             medico.diasAtendimento.forEach(dia => {
-                if (this.diasAtendimento[dia.diaSemana]) {
-                    this.diasAtendimento[dia.diaSemana] = {
-                        inicio: dia.horarioInicio,
-                        fim: dia.horarioFim
-                    };
+                if (!this.diasAtendimento[dia.diaSemana]) return;
+
+                if (!this.diasAtendimento[dia.diaSemana].inicio ||
+                    dia.horario < this.diasAtendimento[dia.diaSemana].inicio) {
+                    this.diasAtendimento[dia.diaSemana].inicio = dia.horario;
+                }
+
+                if (!this.diasAtendimento[dia.diaSemana].fim ||
+                    dia.horario > this.diasAtendimento[dia.diaSemana].fim) {
+                    this.diasAtendimento[dia.diaSemana].fim = dia.horario;
                 }
             });
 
+            this.medicoSelecionado = medico;
             this.modalEditarVisivel = true;
-        },
-
+        }
+        ,
         fecharModal() {
             this.modalAdicionarVisivel = false;
             this.modalEditarVisivel = false;
             this.resetarFormulario();
             this.fetchDoctors();
         },
-
         validateHorario(dia) {
             const erro = validarHorario(dia);
             if (erro) {
@@ -330,7 +315,6 @@ export default {
                 dia[1].fim = "";
             }
         },
-
         resetarFormulario() {
             this.form = {
                 nome: '', cpf: '', sexo: '', dataNascimento: '', email: '', senha: '', telefoneConsultorio: '',
@@ -348,11 +332,9 @@ export default {
             this.crmInvalido = false;
             this.medicoSelecionado = null;
         },
-
         validarNome(e) {
             this.form.nome = validarNome(e.target.value);
         },
-
         handleCPFInput(e) {
             this.form.cpf = handleCPFInput(e.target.value);
             if (this.form.cpf.length === 14 && !validarCPF(this.form.cpf)) {
@@ -360,41 +342,43 @@ export default {
                 this.form.cpf = "";
             }
         },
-
         handlePhoneInput(e) {
             this.form.telefoneConsultorio = handlePhoneInput(e.target.value);
         },
-
         formatCRM(e) {
             this.form.crm = formatarCRM(e.target.value);
             this.crmInvalido = this.form.crm.length < 5;
         },
-
         formatarValorConsulta(e) {
             this.form.valorConsulta = formatarValorConsulta(e.target.value);
             const valor = parseFloat(this.form.valorConsulta.replace(/[^\d.-]/g, ''));
             this.valorInvalido = isNaN(valor) || valor <= 0;
         },
-
-        async salvarMedico(isEdicao) {
+        gerarHorariosDia(inicio, fim, duracao) {
+            if (!inicio || !fim || !duracao) return [];
+            const [hInicio, mInicio] = inicio.split(':').map(Number);
+            const [hFim, mFim] = fim.split(':').map(Number);
+            let start = new Date(0, 0, 0, hInicio, mInicio, 0);
+            let end = new Date(0, 0, 0, hFim, mFim, 0);
+            let horarios = [];
+            while (start <= new Date(end.getTime() - duracao * 60000)) {
+                horarios.push(start.toTimeString().substring(0, 5));
+                start = new Date(start.getTime() + duracao * 60000);
+            }
+            return horarios;
+        },
+        async salvarMedico() {
             try {
-                // Converter valor da consulta
                 const valor = parseFloat(this.form.valorConsulta.replace(/[^\d,-]/g, '').replace(',', '.'));
                 if (isNaN(valor) || valor <= 0) return alert("Valor da consulta inválido.");
 
-                // Preparar dias de atendimento
                 const dias = [];
-                for (const [diaSemana, horario] of Object.entries(this.diasAtendimento)) {
-                    if (horario.inicio && horario.fim) {
-                        dias.push({
-                            diaSemana,
-                            horarioInicio: horario.inicio,
-                            horarioFim: horario.fim
-                        });
-                    }
+                for (const [dia, horario] of Object.entries(this.diasAtendimento)) {
+                    if (!horario.inicio || !horario.fim) continue;
+                    const turnos = this.gerarHorariosDia(horario.inicio, horario.fim, Number(this.form.tempoConsulta));
+                    turnos.forEach(h => dias.push({ diaSemana: dia, horario: h }));
                 }
 
-                // Montar payload
                 const payload = {
                     nome: this.form.nome,
                     cpf: this.form.cpf,
@@ -411,42 +395,24 @@ export default {
                     diasAtendimento: dias
                 };
 
-                let response;
-                if (isEdicao && this.medicoSelecionado) {
-                    // Atualizar médico existente
-                    response = await medicoApi.put(`/update/${this.medicoSelecionado.id}`, payload);
-                } else {
-                    // Criar novo médico
-                    response = await medicoApi.post('/admin-criar', payload);
-                }
-
+                const isEdicao = this.modalEditarVisivel && this.medicoSelecionado;
+                const url = isEdicao ? `/update/${this.medicoSelecionado.id}` : '/admin-criar';
+                const method = isEdicao ? 'put' : 'post';
+                await medicoApi[method](url, payload);
                 alert("Médico salvo com sucesso!");
                 this.fecharModal();
             } catch (err) {
                 console.error('Erro ao salvar médico:', err);
-                let errorMsg = 'Erro ao salvar médico.';
-
-                if (err.response) {
-                    if (err.response.status === 400) {
-                        errorMsg = err.response.data || errorMsg;
-                    } else if (err.response.data) {
-                        errorMsg = `${errorMsg} Detalhes: ${err.response.data}`;
-                    }
-                }
-
-                alert(errorMsg);
+                alert('Erro ao salvar médico. Verifique os dados.');
             }
         },
-
         async excluirMedico(id) {
             if (confirm('Deseja excluir este médico?')) {
                 try {
                     await medicoApi.delete(`/deletar/${id}`);
                     this.fetchDoctors();
-                    alert('Médico excluído com sucesso!');
                 } catch (err) {
                     console.error('Erro ao excluir médico:', err);
-                    alert('Erro ao excluir médico. Tente novamente.');
                 }
             }
         }
