@@ -3,66 +3,116 @@
     <Navbar />
     <div class="container py-5">
       <BotaoVoltar />
-      <h1 class="text-center mb-4 text-primary">Perfil do Médico</h1>
+      <div class="d-flex align-items-center justify-content-center mb-4">
+        <i class="fas fa-user-md fa-2x text-primary me-3"></i>
+        <h1 class="text-primary mb-0">Perfil do Médico</h1>
+      </div>
 
       <!-- Exibe o perfil do médico -->
       <div v-if="medico">
         <!-- Informações Pessoais -->
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow-lg mb-4 p-4">
           <div class="card-body">
-            <h5 class="card-title mb-3">
-              <i class="fas fa-info-circle me-2 text-primary"></i>
-              <strong>Informações Pessoais</strong>
-              <i class="fas fa-edit ms-2 text-primary cursor-pointer" @click="abrirModal"></i>
-            </h5>
-            <p><strong>Nome Completo:</strong> {{ medico.nome }}</p>
-            <p><strong>E-mail:</strong> {{ medico.email }}</p>
-            <p><strong>Telefone:</strong> {{ medico.telefoneConsultorio }}</p>
-            <p><strong>CRM:</strong> {{ medico.crm || "Não informado" }}</p>
-            <p><strong>Especialidade:</strong> {{ medico.especialidade || "Não informado" }}</p>
-            <p><strong>UF:</strong> {{ medico.uf }}</p>
-            <p><strong>Sexo:</strong> {{ medico.sexo }}</p>
-            <p><strong>CPF:</strong> {{ medico.cpf || "Não informado" }}</p>
-            <p><strong>Valor da Consulta:</strong> {{ medico.valorConsulta || "Não informado" }}</p>
-            <p><strong>Data de Nascimento:</strong> {{ medico.dataNascimento || "Não informado" }}</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-info-circle me-2 text-primary"></i>
+                <strong>Informações Pessoais</strong>
+              </h5>
+              <button class="btn btn-sm btn-outline-primary" @click="abrirModal">
+                <i class="fas fa-edit me-1"></i> Editar
+              </button>
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <p><strong>Nome Completo:</strong> {{ medico.nome }}</p>
+                <p><strong>E-mail:</strong> {{ medico.email }}</p>
+                <p><strong>Telefone:</strong> {{ formatarTelefoneExibicao(medico.telefoneConsultorio) }}</p>
+                <p><strong>CRM:</strong> {{ medico.crm || "Não informado" }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Especialidade:</strong> {{ medico.especialidade || "Não informado" }}</p>
+                <p><strong>UF:</strong> {{ medico.uf }}</p>
+                <p><strong>Sexo:</strong> {{ medico.sexo }}</p>
+                <p><strong>CPF:</strong> {{ formatarCPFExibicao(medico.cpf) || "Não informado" }}</p>
+                <p><strong>Valor da Consulta:</strong> {{ medico.valorConsulta ?
+                  formatarValorConsulta(medico.valorConsulta) : "Não informado" }}</p>
+                <p><strong>Data de Nascimento:</strong> {{ formatarDataNascimento(medico.dataNascimento) ||
+                  "Não informado" }}</p>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Dias de Atendimento -->
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow-lg mb-4 p-4">
           <div class="card-body">
-            <h5 class="card-title mb-3">
-              <i class="fas fa-clock me-2 text-primary"></i>
-              <strong>Dias de Atendimento</strong>
-              <i class="fas fa-edit ms-2 text-primary cursor-pointer" @click="abrirModalDias"></i>
-            </h5>
-            <ul class="list-unstyled">
-              <li v-for="dia in diasAtendimento" :key="dia.diasAtendimentoId">
-                <strong>{{ traduzirDia(dia.diaSemana) }}:</strong> {{ dia.horario }}
-              </li>
-              <li v-if="!diasAtendimento.length" class="text-muted">Nenhum horário cadastrado.</li>
-            </ul>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-clock me-2 text-primary"></i>
+                <strong>Dias de Atendimento</strong>
+              </h5>
+              <button class="btn btn-sm btn-outline-primary" @click="abrirModalDias">
+                <i class="fas fa-edit me-1"></i> Editar
+              </button>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3" v-for="dia in diasSemana" :key="dia.value">
+                <label class="fw-bold">{{ dia.label }}</label>
+                <div v-if="diasAtendimentoEditPerfil[dia.value] && diasAtendimentoEditPerfil[dia.value].inicio">
+                  {{ diasAtendimentoEditPerfil[dia.value].inicio }} - {{ diasAtendimentoEditPerfil[dia.value].fim }}
+                </div>
+                <div v-else class="text-muted">Não atendido</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Botão de Exclusão -->
-        <div class="text-center mt-4">
-          <button class="btn btn-danger btn-lg shadow-sm" @click="confirmarExclusao">
-            <i class="fas fa-trash-alt"></i> Excluir Conta
-          </button>
+        <!-- Segurança da Conta -->
+        <div class="card shadow-lg border-warning mt-4 p-4">
+          <div class="card-body">
+            <h5 class="card-title mb-3 text-warning">
+              <i class="fas fa-shield-alt me-2"></i><strong>Segurança da Conta</strong>
+            </h5>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nova Senha</label>
+                <input type="password" v-model="novaSenha" class="form-control" placeholder="Mínimo 6 caracteres">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Confirmar Senha</label>
+                <input type="password" v-model="confirmarSenha" class="form-control" placeholder="Repita a nova senha">
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+              <button class="btn btn-warning" @click="redefinirSenha" :disabled="loadingSenha">
+                <span v-if="loadingSenha">
+                  <span class="spinner-border spinner-border-sm" role="status"></span>
+                  Processando...
+                </span>
+                <span v-else>
+                  <i class="fas fa-sync-alt me-1"></i> Atualizar Senha
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Redefinir Senha -->
-        <div class="card shadow-sm mt-4">
+        <!-- Zona de Perigo -->
+        <div class="card shadow-lg border-danger mt-4 p-4">
           <div class="card-body">
-            <h5 class="card-title mb-3 text-danger">
-              <i class="fas fa-lock me-2"></i><strong>Redefinir Senha</strong>
-            </h5>
-            <label class="form-label">Senha Antiga</label>
-            <input type="password" v-model="senhaAntiga" class="form-control mb-2" placeholder="Digite a senha antiga" required />
-            <label class="form-label">Nova Senha</label>
-            <input type="password" v-model="novaSenha" class="form-control mb-2" placeholder="Digite a nova senha" required />
-            <button class="btn btn-warning" @click="redefinirSenha">Salvar Nova Senha</button>
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 class="text-danger mb-1">
+                  <i class="fas fa-exclamation-triangle me-2"></i>Zona de Perigo
+                </h5>
+                <p class="mb-0 text-muted">Esta ação é irreversível</p>
+              </div>
+              <button class="btn btn-outline-danger" @click="confirmarExclusao">
+                <i class="fas fa-trash-alt me-1"></i> Excluir Conta
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -77,35 +127,92 @@
     <!-- Modal de Edição Dados -->
     <div v-if="showModalEdit" class="modal-overlay">
       <div class="modal-content">
-        <h4>Editar Informações</h4>
+        <div class="modal-header bg-light">
+          <h5 class="modal-title">Editar Informações</h5>
+          <button type="button" class="btn-close" @click="fecharModal"></button>
+        </div>
         <form @submit.prevent="salvarEdicao">
-          <label>Nome Completo</label>
-          <input v-model="formEdit.nome" type="text" class="form-control" required />
+          <div class="modal-body">
+            <div class="row">
+              <!-- Coluna Esquerda -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Nome Completo</label>
+                  <input v-model="formEdit.nome" type="text" class="form-control" required @input="filtrarNome"
+                    :class="{ 'is-valid': nomeValido, 'is-invalid': !nomeValido }" />
+                  <div v-if="!nomeValido" class="invalid-feedback">
+                    Nome deve conter apenas letras e espaços
+                  </div>
+                </div>
 
-          <label>Telefone</label>
-          <input v-model="formEdit.telefoneConsultorio" type="text" class="form-control" required />
+                <div class="mb-3">
+                  <label class="form-label">Telefone</label>
+                  <input v-model="formEdit.telefoneConsultorio" @input="formatarTelefone" type="text"
+                    class="form-control" required
+                    :class="{ 'is-valid': telefoneValido, 'is-invalid': !telefoneValido }" />
+                  <div v-if="!telefoneValido" class="invalid-feedback">
+                    Telefone inválido
+                  </div>
+                </div>
 
-          <label>CRM</label>
-          <input v-model="formEdit.crm" type="text" class="form-control" maxlength="6" required />
+                <div class="mb-3">
+                  <label class="form-label">CRM</label>
+                  <input v-model="formEdit.crm" type="text" class="form-control" maxlength="6" required />
+                </div>
 
-          <label>Especialidade</label>
-          <input v-model="formEdit.especialidade" type="text" class="form-control" />
+                <div class="mb-3">
+                  <label class="form-label">Especialidade</label>
+                  <select v-model="formEdit.especialidade" class="form-select">
+                    <option v-for="especialidade in especialidades" :key="especialidade" :value="especialidade">
+                      {{ especialidade }}
+                    </option>
+                  </select>
+                </div>
+              </div>
 
-          <label>CPF</label>
-          <input v-model="formEdit.cpf" type="text" class="form-control" maxlength="14" required />
+              <!-- Coluna Direita -->
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">CPF</label>
+                  <input v-model="formEdit.cpf" @input="formatarCPF" @blur="validarCPF" type="text" class="form-control"
+                    maxlength="14" required :class="{ 'is-valid': !cpfInvalido, 'is-invalid': cpfInvalido }" />
+                  <div v-if="cpfInvalido" class="invalid-feedback">
+                    CPF inválido
+                  </div>
+                </div>
 
-          <label>Valor da Consulta (R$)</label>
-          <input v-model="formEdit.valorConsulta" type="text" class="form-control" />
+                <div class="mb-3">
+                  <label class="form-label">Valor da Consulta (R$)</label>
+                  <div class="input-group">
+                    <span class="input-group-text">R$</span>
+                    <input v-model="formEdit.valorConsulta" type="text" class="form-control"
+                      @input="formatarValorConsultaInput" />
+                  </div>
+                </div>
 
-          <label>UF</label>
-          <input v-model="formEdit.uf" type="text" class="form-control" />
+                <div class="mb-3">
+                  <label class="form-label">UF</label>
+                  <select v-model="formEdit.uf" class="form-select">
+                    <option v-for="uf in ufs" :key="uf" :value="uf">{{ uf }}</option>
+                  </select>
+                </div>
 
-          <label>Data de Nascimento</label>
-          <input v-model="formEdit.dataNascimento" type="date" class="form-control" />
-
-          <div class="mt-3 text-center">
-            <button type="submit" class="btn btn-success">Salvar</button>
-            <button type="button" class="btn btn-secondary ms-2" @click="fecharModal">Cancelar</button>
+                <div class="mb-3">
+                  <label class="form-label">Data de Nascimento</label>
+                  <input v-model="formEdit.dataNascimento" type="date" class="form-control" :max="hoje" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="fecharModal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" :disabled="loadingEdicao">
+              <span v-if="loadingEdicao">
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+                Salvando...
+              </span>
+              <span v-else>Salvar Alterações</span>
+            </button>
           </div>
         </form>
       </div>
@@ -114,17 +221,37 @@
     <!-- Modal de Dias de Atendimento -->
     <div v-if="showModalDias" class="modal-overlay">
       <div class="modal-content">
-        <h4 class="mb-3">Editar Dias de Atendimento</h4>
+        <div class="modal-header bg-light">
+          <h5 class="modal-title">Editar Dias de Atendimento</h5>
+          <button type="button" class="btn-close" @click="fecharModalDias"></button>
+        </div>
         <form @submit.prevent="salvarDias">
-          <div class="mb-2" v-for="dia in diasSemanaEnum" :key="dia">
-            <label class="fw-bold">{{ traduzirDia(dia) }}</label>
-            <input v-model="diasSelecionados[dia]" type="text" class="form-control mb-1"
-              placeholder="Ex: 08:00,09:00,10:00" />
-            <small class="text-muted">Separe os horários por vírgula</small>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4 mb-3" v-for="dia in diasSemana" :key="dia.value">
+                <label class="fw-bold">{{ dia.label }}</label>
+                <div class="d-flex">
+                  <select v-model="diasAtendimentoEdit[dia.value].inicio" class="form-select me-2">
+                    <option value="">Início</option>
+                    <option v-for="h in horarios" :key="h" :value="h">{{ h }}</option>
+                  </select>
+                  <select v-model="diasAtendimentoEdit[dia.value].fim" class="form-select">
+                    <option value="">Fim</option>
+                    <option v-for="h in horarios" :key="h" :value="h">{{ h }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="mt-3 text-center">
-            <button type="submit" class="btn btn-success">Salvar</button>
-            <button type="button" class="btn btn-secondary ms-2" @click="fecharModalDias">Cancelar</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="fecharModalDias">Cancelar</button>
+            <button type="submit" class="btn btn-primary" :disabled="loadingDias">
+              <span v-if="loadingDias">
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+                Salvando...
+              </span>
+              <span v-else>Salvar</span>
+            </button>
           </div>
         </form>
       </div>
@@ -133,11 +260,26 @@
     <!-- Modal de Exclusão -->
     <div v-if="showModalDelete" class="modal-overlay">
       <div class="modal-content">
-        <h4 class="text-danger">Confirmação de Exclusão</h4>
-        <p>Tem certeza de que deseja excluir sua conta? Todos os seus dados serão apagados permanentemente.</p>
-        <div class="text-center mt-3">
-          <button class="btn btn-danger" @click="deletarConta">Confirmar</button>
-          <button class="btn btn-secondary ms-2" @click="fecharModal">Cancelar</button>
+        <div class="modal-header bg-light">
+          <h5 class="modal-title text-danger">Confirmação de Exclusão</h5>
+          <button type="button" class="btn-close" @click="fecharModalDelete"></button>
+        </div>
+        <div class="modal-body">
+          <p>Tem certeza de que deseja excluir sua conta? Todos os seus dados serão apagados permanentemente.</p>
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            Esta ação não pode ser desfeita!
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="fecharModalDelete">Cancelar</button>
+          <button class="btn btn-danger" @click="deletarConta" :disabled="loadingExclusao">
+            <span v-if="loadingExclusao">
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+              Excluindo...
+            </span>
+            <span v-else>Confirmar Exclusão</span>
+          </button>
         </div>
       </div>
     </div>
@@ -163,18 +305,69 @@ export default {
       showModalDelete: false,
       showModalDias: false,
       diasAtendimento: [],
-      diasSemanaEnum: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
-      diasSelecionados: {},
+      diasSemana: [
+        { value: 'segunda', label: 'Segunda-feira' },
+        { value: 'terca', label: 'Terça-feira' },
+        { value: 'quarta', label: 'Quarta-feira' },
+        { value: 'quinta', label: 'Quinta-feira' },
+        { value: 'sexta', label: 'Sexta-feira' },
+        { value: 'sabado', label: 'Sábado' }
+      ],
+      diasAtendimentoEdit: {
+        segunda: { inicio: '', fim: '' },
+        terca: { inicio: '', fim: '' },
+        quarta: { inicio: '', fim: '' },
+        quinta: { inicio: '', fim: '' },
+        sexta: { inicio: '', fim: '' },
+        sabado: { inicio: '', fim: '' }
+      },
+      diasAtendimentoEditPerfil: {
+        segunda: { inicio: '', fim: '' },
+        terca: { inicio: '', fim: '' },
+        quarta: { inicio: '', fim: '' },
+        quinta: { inicio: '', fim: '' },
+        sexta: { inicio: '', fim: '' },
+        sabado: { inicio: '', fim: '' }
+      },
+      horarios: this.gerarHorarios(8, 18),
       formEdit: {},
       novaSenha: "",
-      senhaAntiga: "",
-      emailUsuario: ""
+      confirmarSenha: "",
+      emailUsuario: "",
+      loadingSenha: false,
+      loadingEdicao: false,
+      loadingExclusao: false,
+      loadingDias: false,
+      cpfInvalido: false,
+      nomeValido: true,
+      telefoneValido: true,
+      hoje: new Date().toISOString().split("T")[0],
+      especialidades: [
+        'Cardiologia', 'Dermatologia', 'Endocrinologia', 'Gastroenterologia',
+        'Ginecologia', 'Neurologia', 'Oftalmologia', 'Ortopedia',
+        'Otorrinolaringologia', 'Pediatria', 'Psiquiatria', 'Urologia'
+      ],
+      ufs: [
+        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
+        'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+      ]
     };
   },
   async mounted() {
     await this.carregarPerfilDoUsuarioLogado();
   },
   methods: {
+    gerarHorarios(inicio, fim) {
+      const horarios = [];
+      for (let hora = inicio; hora <= fim; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += 15) {
+          const horaStr = hora.toString().padStart(2, '0');
+          const minutoStr = minuto.toString().padStart(2, '0');
+          horarios.push(`${horaStr}:${minutoStr}`);
+        }
+      }
+      return horarios;
+    },
     async carregarPerfilDoUsuarioLogado() {
       try {
         const userResponse = await axios.get("http://localhost:8080/usuarios/logado", {
@@ -208,26 +401,24 @@ export default {
           }
         });
         this.diasAtendimento = response.data || [];
-        // Preenche os campos do modal já com horários cadastrados
-        this.diasSemanaEnum.forEach(dia => {
-          this.diasSelecionados[dia] =
-            this.diasAtendimento.filter(item => item.diaSemana === dia)
-              .map(item => item.horario).join(",");
+
+        // Inicializar diasAtendimentoEdit e diasAtendimentoEditPerfil
+        this.diasSemana.forEach(dia => {
+          const atendimento = this.diasAtendimento.find(d => d.diaSemana === dia.value);
+          if (atendimento) {
+            this.diasAtendimentoEdit[dia.value] = {
+              inicio: atendimento.horarioInicio || '',
+              fim: atendimento.horarioFim || ''
+            };
+            this.diasAtendimentoEditPerfil[dia.value] = { ...this.diasAtendimentoEdit[dia.value] };
+          } else {
+            this.diasAtendimentoEdit[dia.value] = { inicio: '', fim: '' };
+            this.diasAtendimentoEditPerfil[dia.value] = { inicio: '', fim: '' };
+          }
         });
       } catch (error) {
         this.diasAtendimento = [];
       }
-    },
-    traduzirDia(dia) {
-      const mapa = {
-        "Segunda": "Segunda-feira",
-        "Terça": "Terça-feira",
-        "Quarta": "Quarta-feira",
-        "Quinta": "Quinta-feira",
-        "Sexta": "Sexta-feira",
-        "Sábado": "Sábado",
-      };
-      return mapa[dia] || dia;
     },
     abrirModal() {
       if (!this.medico) return;
@@ -249,43 +440,50 @@ export default {
     },
     fecharModal() {
       this.showModalEdit = false;
-      this.showModalDelete = false;
     },
     fecharModalDias() {
       this.showModalDias = false;
     },
-    salvarEdicao() {
-      medicoApi.put(
-        `/update/${this.medico.id}`,
-        this.formEdit,
-        {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
+    fecharModalDelete() {
+      this.showModalDelete = false;
+    },
+    async salvarEdicao() {
+      this.loadingEdicao = true;
+      try {
+        const response = await medicoApi.put(
+          `/update/${this.medico.id}`,
+          this.formEdit,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
+            }
           }
-        }
-      )
-        .then(response => {
-          this.medico = response.data;
-          alert("Informações atualizadas com sucesso!");
-          this.fecharModal();
-        })
-        .catch(error => {
-          console.error("Erro ao atualizar o perfil do médico:", error);
-          alert("Erro ao atualizar o perfil. Verifique as permissões.");
-        });
+        );
+        this.medico = response.data;
+        this.loadingEdicao = false;
+        alert("Informações atualizadas com sucesso!");
+        this.fecharModal();
+      } catch (error) {
+        console.error("Erro ao atualizar o perfil do médico:", error);
+        this.loadingEdicao = false;
+        alert("Erro ao atualizar o perfil. Verifique as permissões.");
+      }
     },
     async salvarDias() {
+      this.loadingDias = true;
       // Monta lista de objetos diasAtendimento a partir dos campos preenchidos
       let lista = [];
-      for (const dia of this.diasSemanaEnum) {
-        const horarios = (this.diasSelecionados[dia] || "")
-          .split(",")
-          .map(h => h.trim())
-          .filter(h => h);
-        for (const horario of horarios) {
-          lista.push({ diaSemana: dia, horario });
+      this.diasSemana.forEach(dia => {
+        const horariosDia = this.diasAtendimentoEdit[dia.value];
+        if (horariosDia.inicio && horariosDia.fim) {
+          lista.push({
+            diaSemana: dia.value,
+            horarioInicio: horariosDia.inicio,
+            horarioFim: horariosDia.fim
+          });
         }
-      }
+      });
+
       try {
         await medicoApi.put(`/update/${this.medico.id}`,
           { diasAtendimento: lista },
@@ -293,38 +491,54 @@ export default {
             headers: { Authorization: `Bearer ${sessionStorage.getItem("authToken")}` }
           }
         );
-        await this.carregarDiasAtendimento();
+        // Atualiza a exibição no perfil
+        this.diasSemana.forEach(dia => {
+          this.diasAtendimentoEditPerfil[dia.value] = { ...this.diasAtendimentoEdit[dia.value] };
+        });
+        this.loadingDias = false;
         this.fecharModalDias();
         alert("Dias de atendimento atualizados!");
       } catch (error) {
+        this.loadingDias = false;
         alert("Erro ao atualizar dias de atendimento.");
       }
     },
     confirmarExclusao() {
       this.showModalDelete = true;
     },
-    deletarConta() {
-      medicoApi.delete(`/deletar/${this.medico.id}`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
-        }
-      })
-        .then(() => {
-          alert("Conta excluída com sucesso!");
-          this.$router.push("/login");
-        })
-        .catch(error => {
-          console.error("Erro ao excluir a conta:", error);
+    async deletarConta() {
+      this.loadingExclusao = true;
+      try {
+        await medicoApi.delete(`/deletar/${this.medico.id}`, {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
+          }
         });
+        this.loadingExclusao = false;
+        alert("Conta excluída com sucesso!");
+        this.$router.push("/login");
+      } catch (error) {
+        console.error("Erro ao excluir a conta:", error);
+        this.loadingExclusao = false;
+        alert("Erro ao excluir conta.");
+      }
     },
     async redefinirSenha() {
-      if (!this.senhaAntiga || !this.novaSenha) {
-        alert("Preencha todos os campos.");
+      // Validações básicas
+      if (this.novaSenha.length < 6) {
+        alert("A nova senha deve ter no mínimo 6 caracteres");
         return;
       }
+
+      if (this.novaSenha !== this.confirmarSenha) {
+        alert("As senhas não coincidem!");
+        return;
+      }
+
+      this.loadingSenha = true;
+
       try {
         const response = await medicoApi.put(`/redefinir-senha/${this.medico.id}`, {
-          senhaAntiga: this.senhaAntiga,
           novaSenha: this.novaSenha
         }, {
           headers: {
@@ -332,36 +546,250 @@ export default {
           }
         });
         alert(response.data);
-        this.fecharModal();
+        this.novaSenha = "";
+        this.confirmarSenha = "";
+        this.loadingSenha = false;
       } catch (error) {
         console.error("Erro ao redefinir senha:", error);
+        this.loadingSenha = false;
         alert("Erro ao redefinir senha.");
       }
+    },
+    formatarCPF() {
+      let valor = this.formEdit.cpf.replace(/\D/g, '');
+      if (valor.length > 11) valor = valor.substring(0, 11);
+
+      // Aplica a máscara de CPF: xxx.xxx.xxx-xx
+      valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+      valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+      valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+
+      this.formEdit.cpf = valor;
+    },
+    formatarCPFExibicao(cpf) {
+      if (!cpf) return "";
+      return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    },
+    formatarTelefone() {
+      let telefone = this.formEdit.telefoneConsultorio.replace(/\D/g, '');
+      if (telefone.length > 11) telefone = telefone.substring(0, 11);
+
+      // Aplica máscara de telefone
+      if (telefone.length === 11) {
+        telefone = telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      } else if (telefone.length === 10) {
+        telefone = telefone.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+      }
+
+      this.formEdit.telefoneConsultorio = telefone;
+      this.telefoneValido = telefone.length >= 14;
+    },
+    formatarTelefoneExibicao(telefone) {
+      if (!telefone) return "";
+      const nums = telefone.replace(/\D/g, '');
+      if (nums.length === 11) {
+        return nums.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      }
+      return telefone;
+    },
+    formatarValorConsulta(valor) {
+      if (!valor) return "";
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(valor);
+    },
+    formatarValorConsultaInput(event) {
+      // Remove qualquer caractere não numérico
+      let valor = event.target.value.replace(/\D/g, '');
+      // Converte para número e divide por 100 para obter os decimais
+      valor = (parseInt(valor) / 100).toFixed(2);
+      this.formEdit.valorConsulta = valor;
+    },
+    filtrarNome(event) {
+      // Remove números e caracteres especiais, mantendo apenas letras, espaços e acentos
+      let nome = event.target.value;
+      nome = nome.replace(/[^a-zA-Z\u00C0-\u00FF\s']/g, '');
+      this.formEdit.nome = nome;
+
+      // Valida se o nome é válido
+      const regex = /^[a-zA-Z\u00C0-\u00FF\s']+$/;
+      this.nomeValido = regex.test(nome) && nome.trim().length > 0;
+    },
+    formatarDataNascimento(data) {
+      if (!data) return '';
+      return new Date(data).toLocaleDateString('pt-BR');
     }
   }
 };
 </script>
 
 <style scoped>
-.container { max-width: 90%; }
-.cursor-pointer { cursor: pointer; }
+.container {
+  max-width: 90%;
+}
+
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+  border: none;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-title {
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.btn {
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: 0.3s ease-in-out;
+  padding: 0.5rem 1rem;
+}
+
+.btn-outline-primary {
+  border-width: 2px;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+}
+
 .modal-overlay {
-  z-index: 1;
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
 }
+
 .modal-content {
-  background: white; padding: 20px; border-radius: 8px;
-  width: 90%; box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
-.text-danger { color: #dc3545; }
-.text-success { color: #28a745; }
-.text-warning { color: #ffc107; }
-.btn-danger {
-  padding: 12px 24px; font-size: 1rem; font-weight: bold;
-  border-radius: 8px; transition: 0.3s ease-in-out;
+
+.modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
-.btn-danger:hover { background-color: #c82333; box-shadow: 0px 4px 8px rgba(255, 0, 0, 0.3); }
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #dee2e6;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.border-warning {
+  border: 2px solid #ffc107 !important;
+}
+
+.border-danger {
+  border: 2px solid #dc3545 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+/* Estilos para o layout de duas colunas no modal */
+.modal-body .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.modal-body .col-md-6 {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.input-group-text {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-right: none;
+}
+
+.input-group .form-control {
+  border-left: none;
+}
+
+/* Estilos para o modal de dias de atendimento */
+.modal-body .col-md-4 {
+  margin-bottom: 1rem;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.form-select {
+  flex: 1;
+  font-size: 0.875rem;
+  padding: 0.4rem 0.75rem;
+}
+
+/* Melhorias para dispositivos móveis */
+@media (max-width: 768px) {
+  .modal-body .col-md-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .d-flex {
+    flex-direction: column;
+  }
+
+  .form-select {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-select.me-2 {
+    margin-right: 0 !important;
+  }
+}
 </style>
