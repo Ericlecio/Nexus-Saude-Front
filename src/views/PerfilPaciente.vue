@@ -24,15 +24,31 @@
             </div>
             <div class="row mt-3">
               <div class="col-md-6">
-                <p><strong>Nome Completo:</strong> {{ paciente.nomeCompleto }}</p>
+                <p>
+                  <strong>Nome Completo:</strong> {{ paciente.nomeCompleto }}
+                </p>
                 <p><strong>E-mail:</strong> {{ paciente.email }}</p>
-                <p><strong>Telefone:</strong> {{ formatarTelefoneExibicao(paciente.telefone) }}</p>
+                <p>
+                  <strong>Telefone:</strong>
+                  {{ formatarTelefoneExibicao(paciente.telefone) }}
+                </p>
               </div>
               <div class="col-md-6">
-                <p><strong>Plano de Saúde:</strong> {{ paciente.planoSaude || "Não informado" }}</p>
-                <p><strong>CPF:</strong> {{ formatarCPFExibicao(paciente.cpf) || "Não informado" }}</p>
-                <p><strong>Data de Nascimento:</strong> {{ formatarDataNascimento(paciente.dataNascimento) ||
-                  "Nãoinformado" }}</p>
+                <p>
+                  <strong>Plano de Saúde:</strong>
+                  {{ paciente.planoSaude || "Não informado" }}
+                </p>
+                <p>
+                  <strong>CPF:</strong>
+                  {{ formatarCPFExibicao(paciente.cpf) || "Não informado" }}
+                </p>
+                <p>
+                  <strong>Data de Nascimento:</strong>
+                  {{
+                    formatarDataNascimento(paciente.dataNascimento) ||
+                    "Nãoinformado"
+                  }}
+                </p>
               </div>
             </div>
           </div>
@@ -47,12 +63,12 @@
             </h5>
 
             <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" v-model="notificacoes.email" id="notifEmail">
+              <input class="form-check-input" type="checkbox" v-model="notificacoes.email" id="notifEmail" />
               <label class="form-check-label" for="notifEmail">Receber notificações por e-mail</label>
             </div>
 
             <div class="form-check form-switch mt-2">
-              <input class="form-check-input" type="checkbox" v-model="notificacoes.sms" id="notifSMS">
+              <input class="form-check-input" type="checkbox" v-model="notificacoes.sms" id="notifSMS" />
               <label class="form-check-label" for="notifSMS">Receber notificações por SMS</label>
             </div>
 
@@ -81,12 +97,15 @@
                 </thead>
                 <tbody>
                   <tr v-for="consulta in paciente.consultas" :key="consulta.id">
-                    <td>{{ formatarDataHora(consulta.data, consulta.horario) }}</td>
+                    <td>
+                      {{ formatarDataHora(consulta.data, consulta.horario) }}
+                    </td>
                     <td>{{ consulta.medico }}</td>
                     <td>{{ consulta.especialidade }}</td>
                     <td>
-                      <span :class="`badge bg-${consulta.concluida ? 'success' : 'warning'}`">
-                        {{ consulta.concluida ? 'Concluída' : 'Agendada' }}
+                      <span :class="`badge bg-${consulta.concluida ? 'success' : 'warning'
+                        }`">
+                        {{ consulta.concluida ? "Concluída" : "Agendada" }}
                       </span>
                     </td>
                   </tr>
@@ -104,13 +123,21 @@
             </h5>
 
             <div class="row g-3">
+              <!-- Adicione este campo para senha atual -->
+              <div class="col-md-12" v-if="!isAdmin">
+                <label class="form-label">Senha Atual</label>
+                <input type="password" v-model="senhaAtual" class="form-control" placeholder="Digite sua senha atual"
+                  required />
+              </div>
+
               <div class="col-md-6">
                 <label class="form-label">Nova Senha</label>
-                <input type="password" v-model="novaSenha" class="form-control" placeholder="Mínimo 6 caracteres">
+                <input type="password" v-model="novaSenha" class="form-control" placeholder="Mínimo 6 caracteres" />
               </div>
               <div class="col-md-6">
                 <label class="form-label">Confirmar Senha</label>
-                <input type="password" v-model="confirmarSenha" class="form-control" placeholder="Repita a nova senha">
+                <input type="password" v-model="confirmarSenha" class="form-control"
+                  placeholder="Repita a nova senha" />
               </div>
             </div>
 
@@ -174,7 +201,10 @@
             <div class="mb-3">
               <label class="form-label">Telefone</label>
               <input v-model="formEdit.telefone" @input="formatarTelefone" type="text" class="form-control" required
-                :class="{ 'is-valid': telefoneValido, 'is-invalid': !telefoneValido }" />
+                :class="{
+                  'is-valid': telefoneValido,
+                  'is-invalid': !telefoneValido,
+                }" />
               <div v-if="!telefoneValido" class="invalid-feedback">
                 Telefone inválido (formato: (00) 00000-0000)
               </div>
@@ -200,15 +230,19 @@
 
             <div class="mb-3">
               <label class="form-label">Data de Nascimento</label>
-              <input v-model="formEdit.dataNascimento" type="date" class="form-control" required :max="hoje"
-                :class="{ 'is-valid': nascimentoValido, 'is-invalid': !nascimentoValido }" />
+              <input v-model="formEdit.dataNascimento" type="date" class="form-control" required :max="hoje" :class="{
+                'is-valid': nascimentoValido,
+                'is-invalid': !nascimentoValido,
+              }" />
               <div v-if="!nascimentoValido" class="invalid-feedback">
                 Data de nascimento inválida
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="fecharModal">Cancelar</button>
+            <button type="button" class="btn btn-secondary" @click="fecharModal">
+              Cancelar
+            </button>
             <button type="submit" class="btn btn-primary" :disabled="cpfInvalido || !todosCamposValidos">
               <span v-if="loadingEdicao">
                 <span class="spinner-border spinner-border-sm" role="status"></span>
@@ -229,14 +263,19 @@
           <button type="button" class="btn-close" @click="fecharModal"></button>
         </div>
         <div class="modal-body">
-          <p>Tem certeza de que deseja excluir sua conta? Todos os seus dados serão apagados permanentemente.</p>
+          <p>
+            Tem certeza de que deseja excluir sua conta? Todos os seus dados
+            serão apagados permanentemente.
+          </p>
           <div class="alert alert-warning">
             <i class="fas fa-exclamation-circle me-2"></i>
             Esta ação não pode ser desfeita!
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="fecharModal">Cancelar</button>
+          <button class="btn btn-secondary" @click="fecharModal">
+            Cancelar
+          </button>
           <button class="btn btn-danger" @click="deletarConta" :disabled="loadingExclusao">
             <span v-if="loadingExclusao">
               <span class="spinner-border spinner-border-sm" role="status"></span>
@@ -253,7 +292,7 @@
 </template>
 
 <script>
-import { pacienteApi } from '@/services/http';
+import { pacienteApi } from "@/services/http";
 import axios from "axios";
 import Navbar from "@/components/Navbar.vue";
 import Footer from "@/components/Footer.vue";
@@ -267,20 +306,22 @@ export default {
       paciente: null,
       showModalEdit: false,
       showModalDelete: false,
+      senhaAtual: "",
+      isAdmin: false,
       formEdit: {},
       planosSaude: [
-        { nome: 'Unimed' },
-        { nome: 'Amil' },
-        { nome: 'Bradesco Saúde' },
-        { nome: 'SulAmérica' },
-        { nome: 'Hapvida' },
-        { nome: 'Notredame Intermédica' },
-        { nome: 'Sem plano de saúde' },
-        { nome: 'Porto Seguro Saúde' },
-        { nome: 'Grupo NotreDame' },
-        { nome: 'Golden Cross' },
-        { nome: 'Care Plus' },
-        { nome: 'Bradesco Saúde Empresarial' }
+        { nome: "Unimed" },
+        { nome: "Amil" },
+        { nome: "Bradesco Saúde" },
+        { nome: "SulAmérica" },
+        { nome: "Hapvida" },
+        { nome: "Notredame Intermédica" },
+        { nome: "Sem plano de saúde" },
+        { nome: "Porto Seguro Saúde" },
+        { nome: "Grupo NotreDame" },
+        { nome: "Golden Cross" },
+        { nome: "Care Plus" },
+        { nome: "Bradesco Saúde Empresarial" },
       ],
       hoje: new Date().toISOString().split("T")[0],
       cpfInvalido: false,
@@ -295,29 +336,49 @@ export default {
       loadingExclusao: false,
       notificacoes: {
         email: true,
-        sms: false
-      }
+        sms: false,
+      },
     };
   },
   computed: {
     todosCamposValidos() {
-      return this.nomeValido &&
+      return (
+        this.nomeValido &&
         this.telefoneValido &&
         this.nascimentoValido &&
-        !this.cpfInvalido;
-    }
+        !this.cpfInvalido
+      );
+    },
   },
   async mounted() {
     await this.carregarPerfilDoUsuarioLogado();
+
+    // Verificar se é admin
+    try {
+      const userResponse = await axios.get(
+        "http://localhost:8080/usuarios/logado",
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
+        }
+      );
+      this.isAdmin = userResponse.data.roles.includes("ROLE_ADMIN");
+    } catch (error) {
+      console.error("Erro ao verificar permissões:", error);
+    }
   },
   methods: {
     async carregarPerfilDoUsuarioLogado() {
       try {
-        const userResponse = await axios.get("http://localhost:8080/usuarios/logado", {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
-          },
-        });
+        const userResponse = await axios.get(
+          "http://localhost:8080/usuarios/logado",
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            },
+          }
+        );
         const email = userResponse.data.email;
         this.emailUsuario = email;
         const response = await pacienteApi.get(`/email/${email}`);
@@ -335,7 +396,7 @@ export default {
         cpf: this.paciente.cpf,
         dataNascimento: this.paciente.dataNascimento,
         planoSaude: this.paciente.planoSaude,
-        email: this.paciente.email
+        email: this.paciente.email,
       };
       this.showModalEdit = true;
     },
@@ -358,8 +419,8 @@ export default {
           this.formEdit,
           {
             headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
-            }
+              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+            },
           }
         );
         this.paciente = response.data;
@@ -381,8 +442,8 @@ export default {
       try {
         await pacienteApi.delete(`/deletar/${this.paciente.id}`, {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
-          }
+            Authorization: `Bearer ${sessionStorage.getItem("authToken")}`,
+          },
         });
         this.loadingExclusao = false;
         alert("Conta excluída com sucesso!");
@@ -394,23 +455,23 @@ export default {
       }
     },
     formatarCPF() {
-      let valor = this.formEdit.cpf.replace(/\D/g, '');
+      let valor = this.formEdit.cpf.replace(/\D/g, "");
       if (valor.length > 11) valor = valor.substring(0, 11);
 
       // Aplica a máscara de CPF: xxx.xxx.xxx-xx
-      valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
-      valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
-      valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+      valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 
       this.formEdit.cpf = valor;
       this.validarCPF();
     },
     formatarCPFExibicao(cpf) {
       if (!cpf) return "";
-      return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+      return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
     },
     async validarCPF() {
-      const cpf = this.formEdit.cpf.replace(/\D/g, '');
+      const cpf = this.formEdit.cpf.replace(/\D/g, "");
 
       // Validação básica de tamanho
       if (cpf.length !== 11) {
@@ -455,8 +516,13 @@ export default {
 
       // Verifica se CPF já está cadastrado
       try {
-        const response = await axios.get(`http://localhost:8080/paciente/cpf/${cpf}`);
-        if (response.data.exists && cpf !== this.paciente.cpf.replace(/\D/g, '')) {
+        const response = await axios.get(
+          `http://localhost:8080/paciente/cpf/${cpf}`
+        );
+        if (
+          response.data.exists &&
+          cpf !== this.paciente.cpf.replace(/\D/g, "")
+        ) {
           this.cpfInvalido = true;
         } else {
           this.cpfInvalido = false;
@@ -467,14 +533,14 @@ export default {
       }
     },
     formatarTelefone() {
-      let telefone = this.formEdit.telefone.replace(/\D/g, '');
+      let telefone = this.formEdit.telefone.replace(/\D/g, "");
       if (telefone.length > 11) telefone = telefone.substring(0, 11);
 
       // Aplica máscara de telefone
       if (telefone.length === 11) {
-        telefone = telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        telefone = telefone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
       } else if (telefone.length === 10) {
-        telefone = telefone.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        telefone = telefone.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
       }
 
       this.formEdit.telefone = telefone;
@@ -482,16 +548,16 @@ export default {
     },
     formatarTelefoneExibicao(telefone) {
       if (!telefone) return "";
-      const nums = telefone.replace(/\D/g, '');
+      const nums = telefone.replace(/\D/g, "");
       if (nums.length === 11) {
-        return nums.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        return nums.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
       }
       return telefone;
     },
     filtrarNome(event) {
       // Remove números e caracteres especiais, mantendo apenas letras, espaços e acentos
       let nome = event.target.value;
-      nome = nome.replace(/[^a-zA-Z\u00C0-\u00FF\s']/g, '');
+      nome = nome.replace(/[^a-zA-Z\u00C0-\u00FF\s']/g, "");
       this.formEdit.nomeCompleto = nome;
 
       // Valida se o nome é válido
@@ -499,13 +565,13 @@ export default {
       this.nomeValido = regex.test(nome) && nome.trim().length > 0;
     },
     formatarDataHora(data, hora) {
-      if (!data) return '';
+      if (!data) return "";
       const dataObj = new Date(data);
       return `${dataObj.toLocaleDateString()} às ${hora}`;
     },
     formatarDataNascimento(data) {
-      if (!data) return '';
-      return new Date(data).toLocaleDateString('pt-BR');
+      if (!data) return "";
+      return new Date(data).toLocaleDateString("pt-BR");
     },
     async redefinirSenha() {
       // Validações básicas
@@ -519,38 +585,57 @@ export default {
         return;
       }
 
+      // Validação para pacientes não-admins
+      if (!this.isAdmin && (!this.senhaAtual || this.senhaAtual.length < 6)) {
+        alert("Por favor, digite sua senha atual para confirmar a alteração");
+        return;
+      }
+
       this.loadingSenha = true;
 
       try {
-        const response = await axios.post(
-          "http://localhost:8080/usuarios/redefinir-senha",
-          {
-            email: this.paciente.email,
-            novaSenha: this.novaSenha
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${sessionStorage.getItem("authToken")}`
-            }
-          }
+        const pacienteId = this.paciente.id;
+
+        const payload = {
+          novaSenha: this.novaSenha,
+          senhaAntiga: this.isAdmin ? "" : this.senhaAtual,
+        };
+
+        const response = await pacienteApi.put(
+          `/redefinir-senha/${pacienteId}`,
+          payload
         );
 
         if (response.status === 200) {
           alert("Senha atualizada com sucesso!");
           this.novaSenha = "";
           this.confirmarSenha = "";
+          this.senhaAtual = "";
+
+          // Opcional: forçar logout após mudança de senha
+          sessionStorage.removeItem("authToken");
+          this.$router.push("/login");
         }
       } catch (error) {
         console.error("Erro ao redefinir senha:", error);
-        alert(error.response?.data?.message || "Erro ao redefinir senha. Verifique os dados.");
+
+        if (error.response?.status === 403) {
+          alert(
+            "Acesso não autorizado. Verifique sua senha atual e tente novamente."
+          );
+        } else if (error.response?.status === 400) {
+          alert(error.response.data || "Dados inválidos fornecidos.");
+        } else {
+          alert("Erro ao redefinir senha. Tente novamente mais tarde.");
+        }
       } finally {
         this.loadingSenha = false;
       }
     },
     salvarPreferencias() {
       alert("Preferências de notificação salvas com sucesso!");
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -603,6 +688,20 @@ export default {
 .btn-warning:hover {
   background-color: #e0a800;
   border-color: #d39e00;
+}
+
+/* No seu arquivo de estilo */
+.card.border-warning {
+  border-width: 2px;
+}
+
+.form-control:focus {
+  border-color: #ffc107;
+  box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+}
+
+.btn-warning {
+  font-weight: 600;
 }
 
 .modal-overlay {
