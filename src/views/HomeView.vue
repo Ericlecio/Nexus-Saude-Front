@@ -398,8 +398,8 @@ export default {
 }
 
 .btn-outline-light {
-  border: 2px solid white;
-  color: white;
+  border: solid #00ff9d;
+  color: #03052b;
   background: transparent;
   transition: all 0.3s ease;
 }
